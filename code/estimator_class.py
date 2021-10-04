@@ -178,3 +178,46 @@ class loglikelihood_estimator_nelder(object):
 
         return(self.res)
 
+
+class multivariate_loglikelihood_estimator_bfgs(object):
+    """
+    Estimator class for Exponential Hawkes process obtained through minimizaton of a loss using the L-BFGS-B algorithm.
+
+    Attributes
+    ----------
+    res : OptimizeResult
+        Result from minimization.
+    """
+    def __init__(self, loss=multivariate_loglikelihood_simplified, bounds=[(0.0, None), (None, None), (0.0, None)], initial_guess=np.array((1.0, 0.0, 1.0)), options = {'disp': False}):
+        """
+        Parameters
+        ----------
+        loss : {loglikelihood, likelihood_approximated} or callable.
+            Function to minimize. Default is loglikelihood.
+        bounds : list.
+            Bounds to set for the algorithm. By default, only bounds are for lambda_0 and beta to be non-negative.
+            If method appears to be unstable, a bounds like ((epsilon, None), (None, None), (epsilon, None)) with epsilon = 1e-10 is recommended.
+            Default is ((0.0, None), (None, None), (0.0, None)).
+        initial_guess : array of float.
+            Initial guess for estimated vector. Default is np.array((1.0, 0.0, 1.0)).
+        options : dict
+            Options to pass to the minimization method. Default is {'disp': False}.
+        """
+        self.loss = loss
+        self.bounds = bounds
+        self.initial_guess = np.array((1.0, 0.0, 1.0))
+        self.options = options
+
+    def fit(self, timestamps):
+        """
+        Parameters
+        ----------
+        timestamps : list of float
+            Ordered list containing event times.
+        """
+
+        self.res = minimize(self.loss, self.initial_guess, method="L-BFGS-B",
+                       args=timestamps, bounds=self.bounds,
+                       options=self.options)
+
+        return(self.res)

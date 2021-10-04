@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib
 from matplotlib import pyplot as plt
 from scipy import stats
+from code.colormaps import get_continuous_cmap
 
 
 def fill_square_matrix(K):
@@ -75,7 +76,7 @@ class multivariate_exponential_hawkes(object):
         self.max_time = max_time
 
         self.nb_processes = self.mu.shape[0]
-        self.count = np.zeros((self.nb_processes), dtype=int)
+        self.count = np.zeros(self.nb_processes, dtype=int)
 
         self.timestamps = [(0, 0)]
         self.intensity_jumps = np.copy(mu)
@@ -145,6 +146,8 @@ class multivariate_exponential_hawkes(object):
                 self.count[type_event] += 1
 
         self.max_time = self.timestamps[-1][0]
+        # Important to add the max_time for plotting and being consistent.
+        self.timestamps += [(self.max_time, 0)]
 
     def plot_intensity(self, ax=None, plot_N=True):
         """
@@ -183,8 +186,6 @@ class multivariate_exponential_hawkes(object):
                     ax1 = ax
                 else:
                     return "ax is the wrong shape. It should be (number of processes+1,)"
-
-            self.timestamps += [(self.max_time, 0)]
 
             times = [0, self.timestamps[1][0]]
             intensities = np.array([[self.mu[i, 0], self.mu[i, 0]] for i in range(self.nb_processes)])
@@ -230,3 +231,27 @@ class multivariate_exponential_hawkes(object):
                             ax2[j].plot(jumps_plot[i], [t for t in range(self.count[i]+1) for j in range(2)], c="#1f77b4", alpha=0.5)
 
                     ax2[i].legend()
+
+    def plot_heatmap(self, ax=None):
+        """
+        This function allows to observe the heatmap where each cell {ij} corresponds to the value {alpha/beta} from that interaction
+
+        Parameters
+        ----------
+        ax : .axes.Axes, optional.
+            If None, method will generate own ax.
+            Otherwise, will use given ax.
+        """
+        import seaborn as sns
+
+        if ax is None:
+            fig, ax = plt.subplots()
+        else:
+            ax = ax
+        beta_heat = np.copy(self.beta)
+        beta_heat[beta_heat == 0] = 1
+        heat_matrix = self.alpha/beta_heat
+
+        hex_list = ['#FF3333', '#FFFFFF', '#33FF49']
+
+        ax = sns.heatmap(heat_matrix, cmap=get_continuous_cmap(hex_list), center=0, ax=ax, annot=True)

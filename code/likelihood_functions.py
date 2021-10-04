@@ -95,7 +95,7 @@ def likelihood_approximated(theta, tList):
         A_k_minus = 0
         Lambda_k = 0
         # likelihood = - lambda0*tList[0] + np.log(A_k_minus + lambda0)
-        likelihood = - lambda0*tList[-1] + np.log(A_k_minus + lambda0)
+        likelihood = - lambda0 * tList[-1] + np.log(A_k_minus + lambda0)
         tLast = tList[1]
 
         # Iteration
@@ -107,11 +107,11 @@ def likelihood_approximated(theta, tList):
             A_k = (A_k_minus + alpha)
 
             # Integral
-            Lambda_k = (A_k / beta) * (1 - np.exp(-beta * tau_k))# + lambda0*tau_k
+            Lambda_k = (A_k / beta) * (1 - np.exp(-beta * tau_k))  # + lambda0*tau_k
 
             # Update likelihood
 
-            A_k_minus = A_k*np.exp(-beta * tau_k)
+            A_k_minus = A_k * np.exp(-beta * tau_k)
             if A_k_minus + lambda0 <= 0:
                 return 1e5
             likelihood = likelihood - Lambda_k + np.log(lambda0 + A_k_minus)
@@ -158,8 +158,85 @@ def batch_likelihood(theta, nList, exact=True, penalized=False, C=1):
     for tList in nList:
         batchlikelihood += func(theta, tList)
     batchlikelihood /= len(nList)
-    
+
     if penalized:
-        batchlikelihood += C*(theta[0]**2 + theta[1]**2 + theta[2]**2)
+        batchlikelihood += C * (theta[0] ** 2 + theta[1] ** 2 + theta[2] ** 2)
 
     return batchlikelihood
+
+
+def multivariate_loglikelihood_simplified(theta, tList):
+    """
+
+    Parameters
+    ----------
+    theta : tuple of array
+        Tuple containing 3 arrays. First corresponds to vector of baseline intensities mu. Second is a square matrix
+        corresponding to interaction matrix alpha. Last is vector of recovery rates beta.
+
+    tList : list of tuple
+        List containing tuples (t, m) where t is the time of event and m is the mark (dimension). The marks must go from
+        1 to nb_of_dimensions.
+        Important to note that this algorithm expects the first and last time to mark the beginning and
+        the horizon of the observed process. As such, first and last marks must be equal to 0, signifying that they are
+        not real event times.
+        The algorithm checks by itself if this condition is respected, otherwise it sets the beginning at 0 and the end
+        equal to the last time event.
+
+    Returns
+    -------
+    likelihood : array of float
+        Value of likelihood at each process.
+        The value returned is the opposite of the mathematical likelihood in order to use minimization packages.
+    """
+
+    mu, alpha, beta = (i.copy() for i in theta)
+    beta[beta == 0] = 1
+
+    beta_1 = 1/beta
+
+    timestamps = tList.copy()
+
+    # We first check if we have the correct beginning and ending.
+    if timestamps[0][1] > 0:
+        timestamps = [(0, 0)] + timestamps
+    if timestamps[-1][1] > 0:
+        timestamps += [(timestamps[-1][0], 0)]
+
+    # Initialise values
+    tb, mb = timestamps[1]
+    # Compensator between beginning and first event time
+    compensator = mu*(tb - timestamps[0][0])
+    # Intensity before first jump
+    log_i = np.zeros((alpha.shape[0],1))
+    log_i[mb-1] = np.log(mu[mb-1])
+
+    ic = mu + alpha[:, [mb - 1]]
+
+    for tc, mc in timestamps[2:]:
+        # First we estimate the compensator
+        # print(mu.shape, ic.shape, alpha[:,mb-1].shape)
+        inside_log = (mu - np.minimum(ic, 0))/mu
+        # Restart time
+        t_star = tb + np.multiply(beta_1, np.log(inside_log))
+        # print(inside_log.shape, beta_1.shape, t_star.shape)
+        aux = inside_log
+        aux[aux == 0] = 1
+
+        compensator += (t_star < tc)*(np.multiply(mu, tc-t_star) + np.multiply(beta_1, ic-mu)*(aux - np.exp(-beta*(tc-tb))))
+
+        # Then, estimation of intensity before next jump.
+        if mc > 0:
+            ic = mu + np.multiply((ic - mu), np.exp(-beta*(tc-tb)))
+
+            if ic[mc - 1] <= 0.0:
+                return np.inf
+            else:
+                log_i[mc-1] += np.log(ic[mc - 1])
+
+            ic += alpha[:, [mc - 1]]
+
+        tb = tc
+    print(log_i.shape, compensator.shape)
+    likelihood = log_i - compensator
+    return -likelihood
