@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import cm
 from matplotlib.patches import Patch
-from code.hawkes_process import exp_thinning_hawkes
+from class_and_func.hawkes_process import exp_thinning_hawkes
 from matplotlib import rcParams
 import pickle
 

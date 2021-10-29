@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from code.multivariate_exponential_process import multivariate_exponential_hawkes
+from class_and_func.multivariate_exponential_process import multivariate_exponential_hawkes
 
 if __name__ == "__main__":
     # Set seed

@@ -1,8 +1,8 @@
 import numpy as np
 from scipy import stats
 from scipy.optimize import minimize
-from code.hawkes_process import exp_thinning_hawkes
-from code.likelihood_functions import *
+from class_and_func.hawkes_process import exp_thinning_hawkes
+from class_and_func.likelihood_functions import *
 
 
 class loglikelihood_estimator(object):
@@ -82,7 +82,6 @@ class loglikelihood_estimator(object):
             self.model.set_time_intensity(timestamps)
 
 
-
 class loglikelihood_estimator_bfgs(object):
     """
     Estimator class for Exponential Hawkes process obtained through minimizaton of a loss using the L-BFGS-B algorithm.
@@ -127,7 +126,7 @@ class loglikelihood_estimator_bfgs(object):
         return(self.res)
 
 
-class loglikelihood_estimator_nelder(object):
+class loglikelihood_estimator_nelder(object): #### A FINIR
     """
     Estimator class for Exponential Hawkes process obtained through minimizaton of a loss using the Nelder-Mead simplex algorithm.
     
@@ -136,7 +135,7 @@ class loglikelihood_estimator_nelder(object):
     res : OptimizeResult
         Result from minimization.
     """
-    def __init__(self, loss=loglikelihood, simplex=True, initial_guess=np.array((1.0, 0.0, 1.0)), options = {'disp': False}):
+    def __init__(self, loss=loglikelihood, simplex=True, initial_guess=np.array((1.0, 0.0, 1.0)), options={'disp': False}):
         """
         Parameters
         ----------
@@ -168,7 +167,7 @@ class loglikelihood_estimator_nelder(object):
             while len(x_simplex) != 4:
                 candidate = np.array([np.random.normal(0, 1), np.random.normal(0, 1), np.random.normal(0, 1)])
                 like = self.loss(candidate, timestamps)
-                if like < 100000.0:
+                if like < 1e10:
                     x_simplex += [candidate]
 
             self.options['initial_simplex'] = x_simplex
@@ -176,10 +175,10 @@ class loglikelihood_estimator_nelder(object):
         self.res = minimize(self.loss, self.initial_guess, method="nelder-mead",
                        args=timestamps, options=self.options)
 
-        return(self.res)
+        return self.res
 
 
-class multivariate_loglikelihood_estimator_bfgs(object):
+class multivariate_estimator_bfgs(object):
     """
     Estimator class for Exponential Hawkes process obtained through minimizaton of a loss using the L-BFGS-B algorithm.
 
@@ -188,36 +187,45 @@ class multivariate_loglikelihood_estimator_bfgs(object):
     res : OptimizeResult
         Result from minimization.
     """
-    def __init__(self, loss=multivariate_loglikelihood_simplified, bounds=[(0.0, None), (None, None), (0.0, None)], initial_guess=np.array((1.0, 0.0, 1.0)), options = {'disp': False}):
+    def __init__(self, loss=multivariate_loglikelihood_simplified, dimension=None, initial_guess="random", options=None):
         """
         Parameters
         ----------
         loss : {loglikelihood, likelihood_approximated} or callable.
             Function to minimize. Default is loglikelihood.
-        bounds : list.
-            Bounds to set for the algorithm. By default, only bounds are for lambda_0 and beta to be non-negative.
-            If method appears to be unstable, a bounds like ((epsilon, None), (None, None), (epsilon, None)) with epsilon = 1e-10 is recommended.
-            Default is ((0.0, None), (None, None), (0.0, None)).
-        initial_guess : array of float.
-            Initial guess for estimated vector. Default is np.array((1.0, 0.0, 1.0)).
+        dimension : int
+            Dimension of problem to optimize. Default is None.
+        initial_guess : str or ndarray.
+            Initial guess for estimated vector. Either random initialization, or given vector of dimension (2*dimension + dimension**2,). Default is "random".
         options : dict
             Options to pass to the minimization method. Default is {'disp': False}.
+
+        Attributes
+        ----------
+        bounds :
         """
+        if dimension is None:
+            raise ValueError("Dimension is necessary for initialization.")
+        self.dim = dimension
         self.loss = loss
-        self.bounds = bounds
-        self.initial_guess = np.array((1.0, 0.0, 1.0))
-        self.options = options
+        self.bounds = [(1e-12, None) for i in range(self.dim)] + [(None, None) for i in range(2*self.dim)] + [(1e-12, None) for i in range(self.dim)]
+        if isinstance(initial_guess, str) and initial_guess == "random":
+            self.initial_guess = np.concatenate((np.concatenate((np.ones(self.dim), np.zeros(2*self.dim))), np.ones(self.dim)))
+        if options is None:
+            self.options = {'disp': False}
+        else:
+            self.options = options
 
     def fit(self, timestamps):
         """
         Parameters
         ----------
-        timestamps : list of float
-            Ordered list containing event times.
+        timestamps : list of tuple.
+            Ordered list containing event times and marks.
         """
 
         self.res = minimize(self.loss, self.initial_guess, method="L-BFGS-B",
-                       args=timestamps, bounds=self.bounds,
+                       args=(timestamps, self.dim), bounds=self.bounds,
                        options=self.options)
 
-        return(self.res)
+        return self.res

@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from code.hawkes_process import exp_thinning_hawkes
+from class_and_func.hawkes_process import exp_thinning_hawkes
 
 if __name__ == "__main__":
 

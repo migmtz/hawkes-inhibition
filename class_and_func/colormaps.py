@@ -31,7 +31,7 @@ def get_continuous_cmap(hex_list, float_list=None):
 
     Parameters
     ----------
-    hex_list: list of hex code strings
+    hex_list: list of hex class_and_func strings
     float_list: list of floats between 0 and 1, same length as hex_list. Must start with 0 and end with 1.
 
     Returns

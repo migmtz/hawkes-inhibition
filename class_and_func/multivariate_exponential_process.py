@@ -2,7 +2,8 @@ import numpy as np
 import matplotlib
 from matplotlib import pyplot as plt
 from scipy import stats
-from code.colormaps import get_continuous_cmap
+from class_and_func.colormaps import get_continuous_cmap
+import warnings
 
 
 def fill_square_matrix(K):
@@ -67,8 +68,8 @@ class multivariate_exponential_hawkes(object):
         spectral_radius = np.max(np.abs(np.linalg.eig(np.abs(alpha) / beta_radius)[0]))
 
         if spectral_radius >= 1:
-            raise ValueError("Spectral radius is %s, which makes the process unstable." % (spectral_radius))
-
+            # raise ValueError("Spectral radius is %s, which makes the process unstable." % (spectral_radius))
+            warnings.warn("Spectral radius is %s, which makes the process unstable." % (spectral_radius),RuntimeWarning)
         self.mu = mu.reshape((alpha.shape[0], 1))
         self.alpha = alpha
         self.beta = beta
@@ -122,15 +123,14 @@ class multivariate_exponential_hawkes(object):
 
             upper_intensity = np.sum(auxiliary_intensity)
 
+            previous_t = t
             t += np.random.exponential(1 / upper_intensity)
 
-            ij_intensity = np.multiply(ij_intensity, np.exp(-self.beta * (t - self.timestamps[-1][0])))
+            # ij_intensity = np.multiply(ij_intensity, np.exp(-self.beta * (t - self.timestamps[-1][0])))
+            ij_intensity = np.multiply(ij_intensity, np.exp(-self.beta * (t - previous_t)))
             candidate_intensities = self.mu + np.sum(ij_intensity, axis=1, keepdims=True)
-
             pos_candidate = np.maximum(candidate_intensities, 0) / upper_intensity
-            # print(pos_candidate)
             type_event = np.random.multinomial(1, np.concatenate((pos_candidate.squeeze(), np.array([0.0])))).argmax()
-
             if type_event < self.nb_processes:
                 self.timestamps += [(t, type_event + 1)]
                 ij_intensity[:, type_event] += self.alpha[:, type_event]
@@ -218,6 +218,7 @@ class multivariate_exponential_hawkes(object):
             for i in range(self.nb_processes):
                 ax1[i].plot(times, intensities[i], label="Underlying intensity", c="#1f77b4")
                 ax1[i].plot(times, np.maximum(intensities[i], 0), label="Conditional intensity", c='r')
+                # ax1[i].plot([i for i,j in self.timestamps[:-1]], self.intensity_jumps[i,:], c='k', alpha=0.5)
 
             ax1[0].legend()
 
