@@ -2,7 +2,7 @@ import numpy as np
 import time
 from matplotlib import pyplot as plt
 from class_and_func.multivariate_exponential_process import multivariate_exponential_hawkes
-from class_and_func.likelihood_functions import multivariate_lstsquares_simplified
+from class_and_func.likelihood_functions import multivariate_lstsquares_simplified, multivariate_loglikelihood_simplified
 from class_and_func.estimator_class import multivariate_estimator_bfgs
 from tick.hawkes import HawkesExpKern, HawkesSumExpKern
 
@@ -22,6 +22,8 @@ if __name__ == "__main__":
     print("Starting simulation...")
     hawkes.simulate()
     print("Finished simulation")
+    print("#"*200)
+    print("My real loglikelihood", multivariate_loglikelihood_simplified((mu, alpha, beta), hawkes.timestamps))
 
     loglikelihood_estimation = multivariate_estimator_bfgs(dimension=dim, options={"disp":False})
     print("Starting loglikelihood...")
@@ -43,8 +45,10 @@ if __name__ == "__main__":
 
     list_tick = [[np.array([t for t, m in hawkes.timestamps if (m - 1) == i]) for i in range(dim)]]
 
+    beta_his = np.double(np.c_[beta,beta])
     # With 'likelihood' goodness of fit, you must provide a constant decay for all kernels
-    learnersq = HawkesExpKern(decays=np.double(np.c_[beta,beta]), solver="bfgs")
+    learnersq = HawkesExpKern(decays=beta_his, solver='bfgs')
+    print("His real likelihood", learnersq.score(list_tick, hawkes.timestamps[-1][0], baseline=mu.squeeze(), adjacency=alpha/beta_his))
     # learnerlog = HawkesExpKern(decays=np.mean(beta),gofit="likelihood")
 
     # learnerlog.fit(list_tick)
@@ -52,3 +56,5 @@ if __name__ == "__main__":
 
     # print("log_tick", learnerlog.adjacency*np.c_[beta,beta])
     print("log_sq", learnersq.baseline, "\n", learnersq.adjacency*np.c_[beta,beta])
+
+    # print("attributes", learnersq.__dict__)

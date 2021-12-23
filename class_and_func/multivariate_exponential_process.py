@@ -79,7 +79,7 @@ class multivariate_exponential_hawkes(object):
         self.nb_processes = self.mu.shape[0]
         self.count = np.zeros(self.nb_processes, dtype=int)
 
-        self.timestamps = [(0, 0)]
+        self.timestamps = [(0.0, 0)]
         self.intensity_jumps = np.copy(mu)
 
         self.simulated = False

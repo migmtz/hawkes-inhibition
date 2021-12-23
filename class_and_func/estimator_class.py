@@ -19,7 +19,10 @@ class loglikelihood_estimator(object):
     model : object "exp_thinning_hawkes"
         Class containing the estimated parameters, timestamps and corresponding intensities. Exists only if return_model is set to True.
     """
-    def __init__(self, loss=loglikelihood, solver="L-BFGS-B", C=None, initial_guess=np.array((1.0, 0.0, 1.0)), simplex=True, bounds=[(0.0, None), (None, None), (0.0, None)], return_model=False, options = {'disp': False}):
+
+    def __init__(self, loss=loglikelihood, solver="L-BFGS-B", C=None, initial_guess=np.array((1.0, 0.0, 1.0)),
+                 simplex=True, bounds=[(0.0, None), (None, None), (0.0, None)], return_model=False,
+                 options={'disp': False}):
         """
         Parameters
         ----------
@@ -46,7 +49,8 @@ class loglikelihood_estimator(object):
             
         """
         if C is not None:
-            self.loss = lambda theta, timestamps: loss(theta, timestamps) + C*(theta[0]**2 + theta[1]**2 + theta[2]**2)
+            self.loss = lambda theta, timestamps: loss(theta, timestamps) + C * (
+                        theta[0] ** 2 + theta[1] ** 2 + theta[2] ** 2)
             self.C = C
         else:
             self.loss = loss
@@ -56,11 +60,13 @@ class loglikelihood_estimator(object):
         self.bounds = bounds
         self.return_model = return_model
         self.options = options
-        
+
         if solver == "L-BFGS-B":
-            self._estimator = loglikelihood_estimator_bfgs(loss=self.loss, bounds=self.bounds, initial_guess=self.initial_guess, options=self.options)
+            self._estimator = loglikelihood_estimator_bfgs(loss=self.loss, bounds=self.bounds,
+                                                           initial_guess=self.initial_guess, options=self.options)
         elif solver == "nelder-mead":
-            self._estimator = loglikelihood_estimator_nelder(loss=self.loss, simplex=self.simplex, initial_guess=self.initial_guess, options=self.options)
+            self._estimator = loglikelihood_estimator_nelder(loss=self.loss, simplex=self.simplex,
+                                                             initial_guess=self.initial_guess, options=self.options)
         else:
             raise ValueError('Unknown solver %s' % solver)
 
@@ -91,7 +97,9 @@ class loglikelihood_estimator_bfgs(object):
     res : OptimizeResult
         Result from minimization.
     """
-    def __init__(self, loss=loglikelihood, bounds=[(0.0, None), (None, None), (0.0, None)], initial_guess=np.array((1.0, 0.0, 1.0)), options = {'disp': False}):
+
+    def __init__(self, loss=loglikelihood, bounds=[(0.0, None), (None, None), (0.0, None)],
+                 initial_guess=np.array((1.0, 0.0, 1.0)), options={'disp': False}):
         """
         Parameters
         ----------
@@ -120,13 +128,13 @@ class loglikelihood_estimator_bfgs(object):
         """
 
         self.res = minimize(self.loss, self.initial_guess, method="L-BFGS-B",
-                       args=timestamps, bounds=self.bounds,
-                       options=self.options)
+                            args=timestamps, bounds=self.bounds,
+                            options=self.options)
 
-        return(self.res)
+        return (self.res)
 
 
-class loglikelihood_estimator_nelder(object): #### A FINIR
+class loglikelihood_estimator_nelder(object):  #### A FINIR
     """
     Estimator class for Exponential Hawkes process obtained through minimizaton of a loss using the Nelder-Mead simplex algorithm.
     
@@ -135,7 +143,9 @@ class loglikelihood_estimator_nelder(object): #### A FINIR
     res : OptimizeResult
         Result from minimization.
     """
-    def __init__(self, loss=loglikelihood, simplex=True, initial_guess=np.array((1.0, 0.0, 1.0)), options={'disp': False}):
+
+    def __init__(self, loss=loglikelihood, simplex=True, initial_guess=np.array((1.0, 0.0, 1.0)),
+                 options={'disp': False}):
         """
         Parameters
         ----------
@@ -173,7 +183,7 @@ class loglikelihood_estimator_nelder(object): #### A FINIR
             self.options['initial_simplex'] = x_simplex
 
         self.res = minimize(self.loss, self.initial_guess, method="nelder-mead",
-                       args=timestamps, options=self.options)
+                            args=timestamps, options=self.options)
 
         return self.res
 
@@ -187,7 +197,9 @@ class multivariate_estimator_bfgs(object):
     res : OptimizeResult
         Result from minimization.
     """
-    def __init__(self, loss=multivariate_loglikelihood_simplified, dimension=None, initial_guess="random", options=None):
+
+    def __init__(self, loss=multivariate_loglikelihood_simplified, dimension=None, initial_guess="random", options=None,
+                 penalty=False, C=1, eps=1e-6):
         """
         Parameters
         ----------
@@ -207,10 +219,215 @@ class multivariate_estimator_bfgs(object):
         if dimension is None:
             raise ValueError("Dimension is necessary for initialization.")
         self.dim = dimension
-        self.loss = loss
-        self.bounds = [(1e-12, None) for i in range(self.dim)] + [(None, None) for i in range(2*self.dim)] + [(1e-12, None) for i in range(self.dim)]
+        self.penalty = penalty
+        if penalty == "l2":
+            self.loss = lambda x, y, z: loss(x, y, z) + C * np.linalg.norm(x[-dimension:])
+        elif penalty == "rlsquares":
+            self.eps = eps
+            self.loss = lambda x, y, z, eta, eps: loss(x, y, z) + 0.5 * C * np.sum(
+                (x[self.dim: self.dim + self.dim ** 2] ** 2 + eps) / eta) + 0.5 * C * np.sum(eta)
+        else:
+            self.loss = loss
+
+        self.bounds = [(1e-12, None) for i in range(self.dim)] + [(None, None) for i in range(self.dim * self.dim)] + [
+            (1e-12, None) for i in range(self.dim)]
         if isinstance(initial_guess, str) and initial_guess == "random":
-            self.initial_guess = np.concatenate((np.concatenate((np.ones(self.dim), np.zeros(2*self.dim))), np.ones(self.dim)))
+            self.initial_guess = np.concatenate(
+                (np.concatenate((np.ones(self.dim), np.ones(self.dim * self.dim))), np.ones(self.dim)))
+        if options is None:
+            self.options = {'disp': False}
+        else:
+            self.options = options
+
+    def fit(self, timestamps, limit=1000):
+        """
+        Parameters
+        ----------
+        timestamps : list of tuple.
+            Ordered list containing event times and marks.
+        """
+
+        if self.penalty != "rlsquares":
+            self.res = minimize(self.loss, self.initial_guess, method="L-BFGS-B",
+                                args=(timestamps, self.dim), bounds=self.bounds,
+                                options=self.options)
+        else:
+            self.et = np.abs(self.initial_guess[self.dim: self.dim + self.dim ** 2])
+            self.old_et = self.et + 2 * self.eps
+            acc = 1
+            eps = 1
+            while acc < limit and np.linalg.norm(self.et - self.old_et) > self.eps:
+                self.res = minimize(self.loss, self.initial_guess, method="L-BFGS-B",
+                                    args=(timestamps, self.dim, self.et, eps), bounds=self.bounds,
+                                    options=self.options)
+                self.old_et = self.et
+                self.et = np.sqrt(np.array(self.res.x[self.dim: self.dim + self.dim ** 2]) ** 2 + eps)
+                acc += 1
+                eps *= 1 / 2
+                self.initial_guess = self.res.x
+            print(acc, "   ", np.linalg.norm(self.et - self.old_et))
+
+        self.mu_estim = np.array(self.res.x[0: self.dim])
+        self.alpha_estim = np.array(self.res.x[self.dim: self.dim + self.dim ** 2]).reshape((self.dim, self.dim))
+        self.beta_estim = np.array(self.res.x[-self.dim:])
+
+        return self.mu_estim, self.alpha_estim, self.beta_estim
+
+
+class multivariate_estimator_bfgs_grad(object):
+    """
+    Estimator class for Exponential Hawkes process obtained through minimizaton of a loss using the L-BFGS-B algorithm.
+
+    Attributes
+    ----------
+    res : OptimizeResult
+        Result from minimization.
+    """
+
+    def __init__(self, loss=multivariate_loglikelihood_simplified, grad=None, dimension=None, initial_guess="random",
+                 options=None, penalty=False, C=1, eps=1e-6):
+        """
+        Parameters
+        ----------
+        loss : {loglikelihood, likelihood_approximated} or callable.
+            Function to minimize. Default is loglikelihood.
+        dimension : int
+            Dimension of problem to optimize. Default is None.
+        initial_guess : str or ndarray.
+            Initial guess for estimated vector. Either random initialization, or given vector of dimension (2*dimension + dimension**2,). Default is "random".
+        options : dict
+            Options to pass to the minimization method. Default is {'disp': False}.
+
+        Attributes
+        ----------
+        bounds :
+        """
+        if dimension is None:
+            raise ValueError("Dimension is necessary for initialization.")
+        self.dim = dimension
+        self.penalty = penalty
+        if penalty == "l2":
+            self.loss = lambda x, y, z: loss(x, y, z) + C * np.linalg.norm(x[-dimension:])
+        elif penalty == "rlsquares":
+            self.eps = eps
+            if isinstance(grad, bool) and grad:
+                self.loss = multivariate_loglikelihood_with_grad_pen
+                self.grad = True
+            else:
+                self.loss = lambda x, y, z, eta, eps: loss(x, y, z) + 0.5 * C * np.sum(
+                    (x[self.dim: self.dim + self.dim ** 2] ** 2 + eps) / eta) + 0.5 * C * np.sum(eta)
+                self.grad = False
+
+        else:
+            if isinstance(grad, bool) and grad:
+                self.loss = multivariate_loglikelihood_with_grad
+            else:
+                self.loss = loss
+            self.grad = grad
+
+        self.bounds = [(1e-12, None) for i in range(self.dim)] + [(None, None) for i in range(self.dim * self.dim)] + [
+            (1e-12, None) for i in range(self.dim)]
+        if isinstance(initial_guess, str) and initial_guess == "random":
+            self.initial_guess = np.concatenate(
+                (np.concatenate((np.ones(self.dim), np.ones(self.dim * self.dim))), np.ones(self.dim)))
+        if options is None:
+            self.options = {'disp': False}
+        else:
+            self.options = options
+
+    def fit(self, timestamps, limit=1000):
+        """
+        Parameters
+        ----------
+        timestamps : list of tuple.
+            Ordered list containing event times and marks.
+        """
+
+        if self.penalty != "rlsquares":
+            self.res = minimize(self.loss, self.initial_guess, method="L-BFGS-B", jac=self.grad,
+                                args=(timestamps, self.dim), bounds=self.bounds,
+                                options=self.options)
+        else:
+            if self.grad:
+                self.et = np.ones((self.dim*self.dim))
+                self.old_et = self.et + 2 * self.eps
+                acc = 1
+                eps = 1
+                while acc < limit and np.linalg.norm(self.et - self.old_et) > self.eps:
+                    print(acc, "   ", self.initial_guess)
+                    self.res = minimize(self.loss, self.initial_guess, method="L-BFGS-B", jac=self.grad,
+                                        args=(timestamps, eps, self.dim, self.et, eps), bounds=self.bounds,
+                                        options=self.options)
+                    self.old_et = self.et
+                    self.et = np.sqrt(np.array(self.res.x[self.dim: self.dim + self.dim ** 2]) ** 2 + eps)
+                    print(self.old_et, self.et)
+                    acc += 1
+                    eps *= 1 / 2
+                    self.initial_guess = self.res.x
+            else:
+                self.et = np.abs(self.initial_guess[self.dim: self.dim + self.dim ** 2])
+                self.old_et = self.et + 2 * self.eps
+                acc = 1
+                eps = 1
+                while acc < limit and np.linalg.norm(self.et - self.old_et) > self.eps:
+                    print(acc, "   ", np.linalg.norm(self.et - self.old_et))
+                    self.res = minimize(self.loss, self.initial_guess, method="L-BFGS-B",
+                                        args=(timestamps, self.dim, self.et, eps), bounds=self.bounds,
+                                        options=self.options)
+                    self.old_et = self.et
+                    self.et = np.sqrt(np.array(self.res.x[self.dim: self.dim + self.dim ** 2]) ** 2 + eps)
+                    print(self.old_et, self.et)
+                    acc += 1
+                    eps *= 1 / 2
+                    self.initial_guess = self.res.x
+
+        self.mu_estim = np.array(self.res.x[0: self.dim])
+        self.alpha_estim = np.array(self.res.x[self.dim: self.dim + self.dim ** 2]).reshape((self.dim, self.dim))
+        self.beta_estim = np.array(self.res.x[-self.dim:])
+
+        return self.mu_estim, self.alpha_estim, self.beta_estim
+
+
+class multivariate_estimator_jit(object):
+    """
+    Estimator class for Exponential Hawkes process obtained through minimizaton of a loss using the L-BFGS-B algorithm.
+
+    Attributes
+    ----------
+    res : OptimizeResult
+        Result from minimization.
+    """
+
+    def __init__(self, loss=multivariate_loglikelihood_simplified, dimension=None, initial_guess="random", options=None,
+                 penalty=False, C=1):
+        """
+        Parameters
+        ----------
+        loss : {loglikelihood, likelihood_approximated} or callable.
+            Function to minimize. Default is loglikelihood.
+        dimension : int
+            Dimension of problem to optimize. Default is None.
+        initial_guess : str or ndarray.
+            Initial guess for estimated vector. Either random initialization, or given vector of dimension (2*dimension + dimension**2,). Default is "random".
+        options : dict
+            Options to pass to the minimization method. Default is {'disp': False}.
+
+        Attributes
+        ----------
+        bounds :
+        """
+        if dimension is None:
+            raise ValueError("Dimension is necessary for initialization.")
+        self.dim = dimension
+        if penalty:
+            self.loss = lambda x, y, z: loss(x, y, z) + C * np.linalg.norm(x[-dim:])
+        else:
+            self.loss = loss
+        self.bounds = [(1e-12, None) for i in range(self.dim)] + [(None, None) for i in range(self.dim * self.dim)] + [
+            (1e-12, None) for i in range(self.dim)]
+        print(len(self.bounds))
+        if isinstance(initial_guess, str) and initial_guess == "random":
+            self.initial_guess = (np.ones((self.dim, 1)), np.zeros((self.dim, self.dim)), np.ones((self.dim, 1)))
         if options is None:
             self.options = {'disp': False}
         else:
@@ -224,8 +441,14 @@ class multivariate_estimator_bfgs(object):
             Ordered list containing event times and marks.
         """
 
-        self.res = minimize(self.loss, self.initial_guess, method="L-BFGS-B",
-                       args=(timestamps, self.dim), bounds=self.bounds,
-                       options=self.options)
+        self.initial_guess = np.ones((8,))
 
-        return self.res
+        self.res = minimize(self.loss, self.initial_guess, method="L-BFGS-B",
+                            args=(timestamps), bounds=self.bounds,
+                            options=self.options)
+
+        self.mu_estim = np.array(self.res.x[0: self.dim])
+        self.alpha_estim = np.array(self.res.x[self.dim: self.dim + self.dim ** 2]).reshape((self.dim, self.dim))
+        self.beta_estim = np.array(self.res.x[-self.dim:])
+
+        return (self.mu_estim, self.alpha_estim, self.beta_estim)

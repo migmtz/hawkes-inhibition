@@ -15,12 +15,13 @@ if __name__ == "__main__":
     np.random.seed(seed)
 
     dim = 2  # 2, 3 ou 4
-    lr = 0.001
-    nb_epoch = 25
+    lr_log = 0.0001
+    lr_lst = 0.001
+    nb_epoch = 100
 
     mu = np.array([[0.5], [1.0]])
-    alpha = np.array([[-0.9, 3], [1.2, 1.5]])
-    beta = np.array([[4], [5]])
+    alpha = np.array([[-0.9, 3], [1.2, -0.5]])
+    beta = np.array([[4.0], [5.0]])
 
     max_jumps = 1000
 
@@ -35,21 +36,21 @@ if __name__ == "__main__":
     alphalog = torch.nn.Parameter(torch.rand(dim, dim, dtype=torch.float64))
     betalog = torch.nn.Parameter(torch.rand(dim, 1, dtype=torch.float64))
 
-    torch.manual_seed(seed)
-    mulst = torch.nn.Parameter(torch.rand(dim, 1, dtype=torch.float64))
-    alphalst = torch.nn.Parameter(torch.rand(dim, dim, dtype=torch.float64))
-    betalst = torch.nn.Parameter(torch.rand(dim, 1, dtype=torch.float64))
-
+    # torch.manual_seed(seed)
+    # mulst = torch.nn.Parameter(torch.rand(dim, 1, dtype=torch.float64))
+    # alphalst = torch.nn.Parameter(torch.rand(dim, dim, dtype=torch.float64))
+    # # betalst = torch.nn.Parameter(torch.rand(dim, 1, dtype=torch.float64))
+    # betalst = torch.tensor(beta)
     # print(mu)
     # print("torch", multivariate_loglikelihood_torch((torch.tensor(mu)+45, torch.tensor(alpha), torch.tensor(beta)), tList))
     # print("np",
     #       multivariate_loglikelihood_simplified((mu+45,alpha,beta),tList))
 
     parameterslog = [mulog, alphalog, betalog]
-    parameterslst = [mulst, alphalst, betalst]
+    # parameterslst = [mulst, alphalst]
 
-    optimlog = torch.optim.SGD(params=parameterslog, lr=lr)
-    optimlst = torch.optim.SGD(params=parameterslst, lr=lr)
+    optimlog = torch.optim.SGD(params=parameterslog, lr=lr_log)
+    # optimlst = torch.optim.SGD(params=parameterslst, lr=lr_lst)
 
     os.system('rm -rf ' + path)
     writer = SummaryWriter()
@@ -63,17 +64,18 @@ if __name__ == "__main__":
             losslog = multivariate_loglikelihood_torch((mulog, alphalog, betalog), tList)
             losslog.backward()
             optimlog.step()
-            writer.add_scalar("LBFGS-Log", losslog, i)
+            writer.add_scalar("SGD-Log", losslog, i)
             # Least
-            optimlst.zero_grad()
-            losslst = multivariate_lstsquares_torch((mulst, alphalst, betalst), tList)
-            losslst.backward()
-            optimlst.step()
-            writer.add_scalar("LBFGS-Least", losslst, i)
+            # optimlst.zero_grad()
+            # losslst = multivariate_lstsquares_torch((mulst, alphalst, betalst), tList)
+            # losslst.backward()
+            # optimlst.step()
+            # writer.add_scalar("SGD-Least", losslst, i)
 
         writer.close()
 
     print(torch.exp(mulog), alphalog, torch.exp(betalog))
-    print(torch.exp(mulst), alphalst, torch.exp(betalst))
+    # print(torch.exp(mulst), alphalst, torch.exp(betalst))
+    # print(torch.exp(mulst), alphalst, betalst)
 
-    os.system('tensorboard --logdir=' + path)
+    # os.system('tensorboard --logdir=' + path)

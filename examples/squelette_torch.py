@@ -14,7 +14,8 @@ if __name__ == "__main__":
     np.random.seed(10)
 
     dim = 2  # 2, 3 ou 4
-    lr = 0.01
+    lr_log = 0.01
+    lr_lst
     nb_epoch = 100
 
     mu = np.array([[0.5], [1.0]])
@@ -39,7 +40,7 @@ if __name__ == "__main__":
 
     parameters = [mu, alpha, beta]
 
-    optiml = torch.optim.LBFGS(params=parameters, lr=lr)
+    optiml = torch.optim.LBFGS(params=parameters, lr=lr_log)
 
     os.system('rm -rf ' + path)
     writer = SummaryWriter()

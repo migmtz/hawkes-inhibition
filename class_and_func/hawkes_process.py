@@ -9,7 +9,7 @@ class exp_thinning_hawkes(object):
     Univariate Hawkes process with exponential kernel. No events or initial condition before initial time.
     """
 
-    def __init__(self, lambda_0, alpha, beta, t=0, max_jumps=None, max_time=None):
+    def __init__(self, lambda_0, alpha, beta, t=0.0, max_jumps=None, max_time=None):
         """
         Parameters
         ----------
