@@ -107,11 +107,11 @@ if __name__ == "__main__":
     dim = 2  # 2, 3 ou 4
 
     mu = np.array([[1.5], [2.5]])
-    alpha = np.array([[0.0, 0.0], [-1.2, -1.5]])
+    alpha = np.array([[0.0, 0.3], [-1.2, -1.5]])
     beta = np.array([[1.], [2.]])
     theta = (mu, alpha, beta)
     print(mu, "\n", alpha, "\n", beta)
-    max_jumps = 100
+    max_jumps = 1000
 
     ################# SIMULATION
     hawkes = multivariate_exponential_hawkes(mu=mu, alpha=alpha, beta=beta, max_jumps=max_jumps)
@@ -122,21 +122,21 @@ if __name__ == "__main__":
 
     ################# gard
 
-    # loglikelihood_estimation = multivariate_estimator_bfgs(dimension=dim, options={"disp": False})
-    # print("Starting loglikelihood...")
-    # start_time = time.time()
-    # loglikelihood_estimation.fit(hawkes.timestamps)
-    # end_time = time.time() - start_time
-    #
-    # print("Estimation through approx loglikelihood: ", np.round(loglikelihood_estimation.res.x, 3), "\nIn: ", end_time)
+    loglikelihood_estimation = multivariate_estimator_bfgs(dimension=dim, options={"disp": False})
+    print("Starting loglikelihood...")
+    start_time = time.time()
+    loglikelihood_estimation.fit(hawkes.timestamps)
+    end_time = time.time() - start_time
 
-    # loglikelihood_estimation = multivariate_estimator_bfgs_grad(grad=grad, dimension=dim, options={"disp": False})
-    # print("Starting loglikelihood...")
-    # start_time = time.time()
-    # loglikelihood_estimation.fit(hawkes.timestamps)
-    # end_time = time.time() - start_time
-    #
-    # print("Estimation through grad loglikelihood: ", np.round(loglikelihood_estimation.res.x, 3), "\nIn: ", end_time)
+    print("Estimation through approx loglikelihood: ", np.round(loglikelihood_estimation.res.x, 3), "\nIn: ", end_time)
+
+    loglikelihood_estimation = multivariate_estimator_bfgs_grad(grad=grad, dimension=dim, options={"disp": False})
+    print("Starting loglikelihood...")
+    start_time = time.time()
+    loglikelihood_estimation.fit(hawkes.timestamps)
+    end_time = time.time() - start_time
+
+    print("Estimation through grad loglikelihood: ", np.round(loglikelihood_estimation.res.x, 3), "\nIn: ", end_time)
 
     loglikelihood_estimation = multivariate_estimator_bfgs_grad(grad=True, dimension=dim, options={"disp": False})
     print("Starting loglikelihood...")

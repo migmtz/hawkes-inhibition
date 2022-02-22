@@ -2,13 +2,12 @@ import numpy as np
 
 
 def relative_squared_loss(theta, est):
-    theta_low = theta.copy()
+    theta_low = est.copy()
     dim = int(np.sqrt(1 +theta.shape[0]) - 1)
-    theta_low[-dim:][theta_low[-dim:] == 0] = est[-dim:][theta_low[-dim:] == 0]
-    theta_low[theta_low == 0] = 1
-    theta_low = theta_low**2
+    theta_low[-dim:][theta[-dim:] == 0] = theta[-dim:][theta[-dim:] == 0]
 
-    num = (theta - est)**2
+    num = (theta - theta_low) ** 2
+    theta_low = theta**2
 
     mu_error = np.sqrt(np.sum(num[0:dim])/np.sum(theta_low[0:dim]))
     alpha_error = np.sqrt(np.sum(num[dim:dim+dim*dim]) / np.sum(theta_low[dim:dim+dim*dim]))
@@ -20,7 +19,7 @@ def relative_squared_loss(theta, est):
 
 
 if __name__ == "__main__":
-    a = np.array([1,2,3,4,5,6,0,8])
-    b = np.array([1,3,3,4,5,7,10,12])
+    a_reel = np.array([1,2,0,-0.015841911122878687,-0.3248656721048282,-0.19476233068062582,10,12])
+    b = np.array([1,2,0,0,-0.3,-0.2,10,12])
 
-    print(relative_squared_loss(a,b))
+    print(relative_squared_loss(a_reel,b))

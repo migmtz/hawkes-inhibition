@@ -182,7 +182,7 @@ class multivariate_exponential_hawkes(object):
             else:
                 if ax is None:
                     fig, ax1 = plt.subplots(1, self.nb_processes)
-                elif isinstance(ax, matplotlib.axes.Axes):
+                elif isinstance(ax, matplotlib.axes.Axes) or isinstance(ax, np.ndarray):
                     ax1 = ax
                 else:
                     return "ax is the wrong shape. It should be (number of processes+1,)"

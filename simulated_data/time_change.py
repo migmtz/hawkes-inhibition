@@ -18,15 +18,16 @@ def time_change(theta, tList):
 
     beta_1 = 1/beta
 
+    counter = np.zeros((dim, 1))
     transformed_times = []
-    individual_transformed_times = []
+    individual_transformed_times = [[] for i in range(dim)]
 
     # Initialise values
     tb, mb = tList[1]
     # Compensator between beginning and first event time
     compensator = mu*(tb - tList[0][0])
     transformed_times += [np.sum(compensator)]
-    individual_transformed_times += [(compensator[mb - 1, 0], mb)]
+    individual_transformed_times[mb-1] += [compensator[mb - 1, 0]]
     # Intensity before first jump
     ic = mu + alpha[:, [mb - 1]]
     # j=1
@@ -42,7 +43,9 @@ def time_change(theta, tList):
         compensator = (t_star < tc)*(np.multiply(mu, tc-t_star) + np.multiply(beta_1, ic-mu)*(aux - np.exp(-beta*(tc-tb))))
 
         transformed_times += [np.sum(compensator)]
-        individual_transformed_times += [(compensator[mc - 1, 0], mc)]
+        counter += compensator
+        individual_transformed_times[mc - 1] += [counter[mc - 1, 0]]
+        counter[mc - 1] = 0
 
         # Then, estimation of intensity before next jump.
         if mc > 0:

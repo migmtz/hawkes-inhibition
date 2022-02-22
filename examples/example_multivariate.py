@@ -1,18 +1,24 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from class_and_func.multivariate_exponential_process import multivariate_exponential_hawkes
+import seaborn as sns
+
+from matplotlib import rcParams
+
+rcParams['font.family'] = 'serif'
+rcParams["mathtext.fontset"] = "dejavuserif"
 
 if __name__ == "__main__":
     # Set seed
-    # np.random.seed(1)
+    np.random.seed(3)
 
     dim = 2  # 2, 3 ou 4
 
     if dim == 2:
 
-        mu = np.array([0.5, 1.0])
-        alpha = np.array([[-1.9, 3], [0, 0]])
-        beta = np.array([[2, 20], [0, 0]])
+        mu = np.array([0.8, 1.0])
+        alpha = np.array([[-1.9, 3], [0.9, -0.7]])
+        beta = np.array([[2, 20], [3, 2]])
 
     elif dim == 3:
 
@@ -41,9 +47,17 @@ if __name__ == "__main__":
 
     hawkes.simulate()
 
-    print("here")
+    print(hawkes.timestamps[0], hawkes.timestamps[-1])
 
-    hawkes.plot_intensity(plot_N=True)
+    sns.set_theme()
+
+    fig, ax = plt.subplots(2, 1, sharey=True, sharex=True)
+
+    ax[0].set_ylabel("$\lambda^1$")
+    ax[1].set_ylabel("$\lambda^2$")
+
+    ax[1].set_xlabel("$t$")
+    hawkes.plot_intensity(ax=ax.T, plot_N=False)
 
     hawkes.plot_heatmap()
 

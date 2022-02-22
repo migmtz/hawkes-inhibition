@@ -10,15 +10,15 @@ if __name__ == "__main__":
     # Set seed
     np.random.seed(1)
 
-    dim = 2  # 2, 3 ou 4
+    dim = 5  # 2, 3 ou 4
 
     jitted_like = njit(multivariate_loglikelihood_jit)
 
-    mu = np.array([[0.5], [1.0]])
-    alpha = np.array([[-1.9, 3], [1.2, 1.5]])
-    beta = np.array([[5], [8]])
+    mu = np.random.uniform(0, 2, (10, 1))
+    alpha = np.random.normal(0, 1, (10, 10))
+    beta = np.random.uniform(10, 20, (10, 1))
 
-    hawkes = multivariate_exponential_hawkes(mu=mu, alpha=alpha, beta=beta, max_jumps=5000)
+    hawkes = multivariate_exponential_hawkes(mu=mu, alpha=alpha, beta=beta, max_jumps=1000)
 
     # Create a process with given parameters and maximal number of jumps.
 
@@ -32,14 +32,14 @@ if __name__ == "__main__":
     # tList1 = [j for (i, j) in hawkes.timestamps]
 
     start_time = time.time()
-    for k in range(100*10):
+    for k in range(1000):
         jitted_time = jitted_like(theta, hawkes.timestamps)
     end_time = time.time()
 
     print("Jitted parameters: \n", end_time-start_time)
 
     start_time = time.time()
-    for k in range(100*10):
+    for k in range(1000):
         jitted_time = multivariate_loglikelihood_simplified((mu, alpha, beta), hawkes.timestamps)
     end_time = time.time()
 

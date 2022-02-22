@@ -5,13 +5,13 @@ from class_and_func.estimator_class import multivariate_estimator_bfgs
 
 
 if __name__ == "__main__":
-    dim = 2
-    number = 2
+    np.random.seed(0)
+    dim = 10
+    number = 3
     first = 1
-    C = 1
-    with open('_simulation'+str(number), 'r') as read_obj:
+    with open("estimation_"+str(number)+'_file/_simulation'+str(number), 'r') as read_obj:
         csv_reader = csv.reader(read_obj)
-        with open('_estimation'+str(number), 'w', newline='') as myfile:
+        with open("estimation_"+str(number)+'_file/_estimation'+str(number), 'w', newline='') as myfile:
             i = 1
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
             for row in csv_reader:
@@ -26,10 +26,10 @@ if __name__ == "__main__":
                 i += 1
 
     before = 1
-    until = 25
-    with open('_simulation'+str(number), 'r') as read_obj:
+    until = 5
+    with open("estimation_"+str(number)+'_file/_simulation'+str(number), 'r') as read_obj:
         csv_reader = csv.reader(read_obj)
-        with open('_estimation'+str(number), 'a', newline='') as myfile:
+        with open("estimation_"+str(number)+'_file/_estimation'+str(number), 'a', newline='') as myfile:
             i = 1
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
             for row in csv_reader:

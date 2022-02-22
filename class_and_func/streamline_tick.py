@@ -2,7 +2,7 @@ import numpy as np
 from tick.hawkes import HawkesExpKern, HawkesSumExpKern
 
 
-def four_estimation(beta, tList, penalty="l2", C=1e3):
+def four_estimation(beta, tList, penalty="l2", C=[1e3 for i in range(4)]):
     """
     Estimation of 4 parameters with tick.
 
@@ -19,14 +19,14 @@ def four_estimation(beta, tList, penalty="l2", C=1e3):
     beta_tick = np.double(np.c_[beta, beta])
 
     # Estimation with exponential kernel for each interaction
-    expKern = HawkesExpKern(decays=beta_tick, penalty="none")
-    expKern_bfgs = HawkesExpKern(decays=beta_tick, solver="bfgs", penalty=penalty, C=C)
+    expKern = HawkesExpKern(decays=beta_tick, C=C[0])#, penalty="none")
+    expKern_bfgs = HawkesExpKern(decays=beta_tick, solver="bfgs", penalty=penalty, C=C[1])
 
     # Estimation with sum of exponential kernel. Normally we are trying to see if by providing a grid of search for beta
     # the algorithm can find the correct parameters for each process.
     # In this case, the grid consists on the true parameters beta.
-    sumexpKern = HawkesSumExpKern(decays=beta.squeeze(), penalty="none")
-    sumexpKern_bfgs = HawkesSumExpKern(decays=beta.squeeze(), solver="bfgs", penalty=penalty, C=C)
+    sumexpKern = HawkesSumExpKern(decays=beta.squeeze(), C=C[2])#, penalty="elasticnet")
+    sumexpKern_bfgs = HawkesSumExpKern(decays=beta.squeeze(), solver="bfgs", penalty=penalty, C=C[3])
 
     expKern.fit(list_tick)
     expKern_bfgs.fit(list_tick)
@@ -60,13 +60,13 @@ def four_estimation_with_grid(beta, beta_grid, tList, penalty="l2", C=1e3):
     beta_tick = np.double(np.c_[beta, beta])
 
     # Estimation with exponential kernel for each interaction
-    expKern = HawkesExpKern(decays=beta_tick, penalty="none")
+    expKern = HawkesExpKern(decays=beta_tick, C=10*C,penalty="elasticnet", elastic_net_ratio=0.9, random_state=10)
     expKern_bfgs = HawkesExpKern(decays=beta_tick, solver="bfgs", penalty=penalty, C=C)
 
     # Estimation with sum of exponential kernel. Normally we are trying to see if by providing a grid of search for beta
     # the algorithm can find the correct parameters for each process.
     # In this case, the grid consists on the true parameters beta.
-    sumexpKern = HawkesSumExpKern(decays=beta_grid, penalty="none")
+    sumexpKern = HawkesSumExpKern(decays=beta_grid, C=10*C,penalty="elasticnet", elastic_net_ratio=0.9,random_state=10)
     sumexpKern_bfgs = HawkesSumExpKern(decays=beta_grid, solver="bfgs", penalty=penalty, C=C)
 
     expKern.fit(list_tick)

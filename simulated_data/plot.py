@@ -3,40 +3,52 @@ import csv
 from ast import literal_eval as make_tuple
 from class_and_func.estimator_class import multivariate_estimator_bfgs
 from matplotlib import pyplot as plt
-# from class_and_func.streamline_tick import four_estimation
 from metrics import relative_squared_loss
 from dictionary_parameters import dictionary as param_dict
 import seaborn as sns
 
+
+def obtain_average_estimation(file_name, number, dim, number_estimations):
+    n = 0
+    if file_name[0:4] == "tick":
+        if file_name[5:9] == "beta":
+            result = np.zeros((dim + dim * dim * dim,))
+        else:
+            result = np.zeros((dim + dim * dim,))
+    else:
+        result = np.zeros((2 * dim + dim * dim,))
+    with open("estimation_"+str(number)+'_file/_estimation'+str(number)+file_name, 'r') as read_obj:
+        csv_reader = csv.reader(read_obj)
+        for row in csv_reader:
+            if n < number_estimations:
+                result += np.array([float(i) for i in row])
+                n += 1
+    result /= n
+
+    return result
+
+
+dict_names = {"":0, "threshgrad10.0":1, "tick":2, "tick_bfgs":3, "tick_beta":4, "tick_beta_bfgs":5}
+styles = ["solid", "dashdot", "dashed", "dashed", "dotted", "dotted"]
+colors = ["orange", "orange", "g", "b", "g", "b"]
+
+
 if __name__ == "__main__":
-    dim = 2
-    number = 1
+    number = 0
     theta = param_dict[number]
-    theta_estimated = np.zeros((2*dim + dim*dim,))
+    dim = int(np.sqrt(1 + theta.shape[0]) - 1)
     number_estimations = 25
-    n = 0
-    with open('_estimation'+str(number), 'r') as read_obj:
-        csv_reader = csv.reader(read_obj)
-        for row in csv_reader:
-            if n < number_estimations:
-                theta_estimated += np.array([float(i) for i in row])
-                n += 1
-    theta_estimated /= n
-    # print("Estimation", theta_estimated)
 
-    theta_pen = np.zeros((2 * dim + dim * dim,))
-    n = 0
-    with open('_estimation' + str(number) + 'pen', 'r') as read_obj:
-        csv_reader = csv.reader(read_obj)
-        for row in csv_reader:
-            if n < number_estimations:
-                theta_pen += np.array([float(i) for i in row])
-                n += 1
-    theta_pen /= n
-    # print("Penalized", theta_pen)
+    plot_names = ["", "threshgrad10.0", "tick", "tick_bfgs", "tick_beta", "tick_beta_bfgs"]
+    labels = ["MLE", "MLE-$\\varepsilon$", "SGD", "BFGS", "grid-SGD", "grid-BFGS"]
+    estimations = []
 
-    print("Error estimation", relative_squared_loss(theta, theta_estimated))
-    print("Error penalized", relative_squared_loss(theta, theta_pen))
+    for file_name in plot_names:
+        estimations += [obtain_average_estimation(file_name, number, dim, number_estimations)]
+
+    # print("Error estimation", relative_squared_loss(theta, theta_estimated))
+    # print("Error penalized", relative_squared_loss(theta, theta_pen))
+    # print("Error Tick", relative_squared_loss(theta[:-dim], theta_tick))
 
     ####### PLOT
 
@@ -44,13 +56,24 @@ if __name__ == "__main__":
 
     fig, ax = plt.subplots(dim, dim)
 
-    x = np.linspace(0, 2, 100)
+    x = np.linspace(0, 1, 100)
+    x_real = np.linspace(-0.05, 1.05, 102)
 
     for i in range(dim):
         for j in range(dim):
-            ax[i, j].plot(x, theta[dim + dim*i + j] * np.exp(-theta[dim + dim*dim + i] * x), c="r", label="Real kernel")
-            ax[i, j].plot(x, theta_estimated[dim + dim*i + j] * np.exp(-theta_estimated[dim + dim*dim + i] * x), c="m", label="Estimated kernel", alpha=0.75)
-            ax[i, j].plot(x, theta_pen[dim + dim*i + j] * np.exp(-theta_pen[dim + dim*dim + i] * x), c="m", label="Penalized kernel", linestyle=":", alpha=0.75)
-
+            ax[i, j].plot(x_real, theta[dim + dim*i + j] * np.exp(-theta[dim + dim*dim + i] * x_real), c="r", label="True kernel")
+            for ref, estimation in enumerate(estimations):
+                # print(ref)
+                if plot_names[ref][0:4] == "tick":
+                    if plot_names[ref][5:9] == "beta":
+                        ax[i, j].plot(x, np.sum([estimation[dim + dim * i + j + dim*dim*u] * np.exp(-theta[dim + dim * dim + u] * x) for u in range(dim)], axis=0),
+                                      c=colors[dict_names[plot_names[ref]]],
+                                      label=labels[ref], linestyle=styles[dict_names[plot_names[ref]]], alpha=0.5)
+                    else:
+                        ax[i, j].plot(x, estimation[dim + dim * i + j] * np.exp(-theta[dim + dim * dim + i] * x), c=colors[dict_names[plot_names[ref]]],
+                                  label=labels[ref], linestyle=styles[dict_names[plot_names[ref]]], alpha=0.5)
+                else:
+                    # print(dim + dim * i + j)
+                    ax[i, j].plot(x, estimation[dim + dim * i + j] * np.exp(-estimation[dim + dim * dim + i] * x), c=colors[dict_names[plot_names[ref]]], linestyle=styles[dict_names[plot_names[ref]]],label=labels[ref], alpha=0.5)
     plt.legend()
     plt.show()

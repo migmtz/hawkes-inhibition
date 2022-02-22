@@ -3,6 +3,7 @@ from scipy import stats
 from scipy.optimize import minimize
 from class_and_func.hawkes_process import exp_thinning_hawkes
 from class_and_func.likelihood_functions import *
+import time
 
 
 class loglikelihood_estimator(object):
@@ -239,7 +240,7 @@ class multivariate_estimator_bfgs(object):
         else:
             self.options = options
 
-    def fit(self, timestamps, limit=1000):
+    def fit(self, timestamps, threshold=0.01, limit=1000, maxiter=15):
         """
         Parameters
         ----------
@@ -252,23 +253,68 @@ class multivariate_estimator_bfgs(object):
                                 args=(timestamps, self.dim), bounds=self.bounds,
                                 options=self.options)
         else:
-            self.et = np.abs(self.initial_guess[self.dim: self.dim + self.dim ** 2])
-            self.old_et = self.et + 2 * self.eps
-            acc = 1
+            self.options['iprint'] = 0
             eps = 1
+            self.et = np.abs(self.initial_guess[self.dim: self.dim + self.dim ** 2])
+            # start_time = time.time()
+            self.res = minimize(self.loss, self.initial_guess, method="L-BFGS-B",
+                                args=(timestamps, self.dim, self.et, eps), bounds=self.bounds,
+                                options=self.options)
+            # print(time.time()-start_time)
+            self.old_et =self.et
+            self.et = np.sqrt(np.array(self.res.x[self.dim: self.dim + self.dim ** 2]) ** 2 + eps)
+            self.initial_guess = self.res.x
+            acc = 1
+            eps *= 1/2
+            # self.options['maxiter'] = maxiter
             while acc < limit and np.linalg.norm(self.et - self.old_et) > self.eps:
+                alpha = np.abs(self.res.x[self.dim:-self.dim])
+                ordered_alpha = np.sort(alpha)
+                norm = np.sum(ordered_alpha)
+                aux, i = 0, 0
+                while aux <= threshold:
+                    aux += ordered_alpha[i] / norm
+                    i += 1
+                i -= 1
+                thresh = ordered_alpha[i]  # We erase those STRICTLY lower
+                self.bounds = [(1e-12, None) for i in range(self.dim)] + [(None, None) if i >= thresh else (0, 1e-16)
+                                                                          for i in alpha] + [
+                                  (1e-12, None) for i in range(self.dim)]
+
+                # start_time = time.time()
                 self.res = minimize(self.loss, self.initial_guess, method="L-BFGS-B",
                                     args=(timestamps, self.dim, self.et, eps), bounds=self.bounds,
                                     options=self.options)
+                # print(time.time() - start_time, end=" ")
                 self.old_et = self.et
-                self.et = np.sqrt(np.array(self.res.x[self.dim: self.dim + self.dim ** 2]) ** 2 + eps)
+                self.et = np.sqrt(np.array(self.res.x[self.dim: -self.dim]) ** 2 + eps)
+
+                # print(self.res.x, np.linalg.norm(self.et - self.old_et))
                 acc += 1
                 eps *= 1 / 2
                 self.initial_guess = self.res.x
-            print(acc, "   ", np.linalg.norm(self.et - self.old_et))
+
+            # print(acc, "   ", np.linalg.norm(self.et - self.old_et))
+
+            alpha = np.abs(self.res.x[self.dim:-self.dim])
+            ordered_alpha = np.sort(alpha)
+            norm = np.sum(ordered_alpha)
+            aux, i = 0, 0
+            while aux <= threshold:
+                aux += ordered_alpha[i]/norm
+                i += 1
+            i -= 1
+            thresh = ordered_alpha[i] # We erase those STRICTLY lower
+            self.bounds = [(1e-12, None) for i in range(self.dim)] + [(None, None) if i >= thresh else (0, 1e-16) for i in alpha] + [
+                              (1e-12, None) for i in range(self.dim)]
+            self.res = minimize(multivariate_loglikelihood_simplified, self.initial_guess, method="L-BFGS-B",
+                                args=(timestamps, self.dim), bounds=self.bounds,
+                                options=self.options)
+
+            print(self.res.x, "   ", acc)
 
         self.mu_estim = np.array(self.res.x[0: self.dim])
-        self.alpha_estim = np.array(self.res.x[self.dim: self.dim + self.dim ** 2]).reshape((self.dim, self.dim))
+        self.alpha_estim = np.array(self.res.x[self.dim: -self.dim]).reshape((self.dim, self.dim))
         self.beta_estim = np.array(self.res.x[-self.dim:])
 
         return self.mu_estim, self.alpha_estim, self.beta_estim
@@ -284,7 +330,7 @@ class multivariate_estimator_bfgs_grad(object):
         Result from minimization.
     """
 
-    def __init__(self, loss=multivariate_loglikelihood_simplified, grad=None, dimension=None, initial_guess="random",
+    def __init__(self, loss=multivariate_loglikelihood_simplified, grad=True, dimension=None, initial_guess="random",
                  options=None, penalty=False, C=1, eps=1e-6):
         """
         Parameters

@@ -6,40 +6,74 @@ from matplotlib import pyplot as plt
 from metrics import relative_squared_loss
 from dictionary_parameters import dictionary as param_dict
 import seaborn as sns
+from matplotlib.patches import Patch
+
+
+def obtain_average_error(file_name, number, dim, number_estimations, theta):
+    n = 0
+    result = np.zeros((number_estimations, 4))
+
+    with open("estimation_"+str(number)+'_file/_estimation'+str(number)+file_name, 'r') as read_obj:
+        csv_reader = csv.reader(read_obj)
+        for row in csv_reader:
+            if n < number_estimations:
+                theta_estimated = np.array([float(i) for i in row])
+                if file_name[0:4] == "tick":
+                    theta_estimated = np.concatenate((theta_estimated, theta[-dim:]))
+                result[n, :] = np.array(relative_squared_loss(theta, theta_estimated))
+                n += 1
+
+    return result
+
+
+colors = ["orange", "orange", "g", "b", "g", "b"]
+text = ["$\mu^i$", "$\\alpha_{ij}$", "$\\beta_i$", "Total"]
+hatches = ["", "///", "", ""]
 
 
 if __name__ == "__main__":
     dim = 2
-    number = 0
-    theta = param_dict[number]
-    number_estimations = 95
-    errors = np.zeros((number_estimations, 4))
-    errors_pen = np.zeros((number_estimations, 4))
-    n = 0
+    number_grid = [0,1,2]
+    number_estimations = 25
 
-    with open('_estimation'+str(number), 'r') as read_obj:
-        csv_reader = csv.reader(read_obj)
-        for row in csv_reader:
-            if n < number_estimations:
-                theta_estimated = np.array([float(i) for i in row])
-                errors[n, :] = np.array(relative_squared_loss(theta, theta_estimated))
-                n += 1
-    n = 0
-    with open('_estimation'+str(number)+'pen', 'r') as read_obj:
-        csv_reader = csv.reader(read_obj)
-        for row in csv_reader:
-            if n < number_estimations:
-                theta_estimated = np.array([float(i) for i in row])
-                errors_pen[n, :] = np.array(relative_squared_loss(theta, theta_estimated))
-                n += 1
+    plot_names = ["", "threshgrad", "tick", "tick_bfgs"]#, "tick_beta", "tick_beta_bfgs"]
+    numbers_thresh = [10.0, 5.0, 20.0]
+    labels = ["MLE", "MLE-$\\varepsilon$", "SGD", "BFGS"]
 
     sns.set_theme()
-    fig, ax = plt.subplots()
-    ax.boxplot(errors)
-    print(errors)
+    fig, ax = plt.subplots(3, 3, sharey="col")
 
-    fig2, ax2 = plt.subplots()
-    ax2.boxplot(errors_pen)
-    print("\n", errors_pen)
+    for count, number in enumerate(number_grid):
+        theta = param_dict[number]
+        errors = [np.zeros((number_estimations, len(plot_names))) for i in range(3)]
+        for ref, file_name in enumerate(plot_names):
+            if file_name == "threshgrad" or file_name == "thresh":
+                file_name += str(numbers_thresh[count])
+            err = obtain_average_error(file_name, number, dim, number_estimations, theta)
+            # print(err.shape)
+            for i in range(3):
+                errors[i][:, ref] = err[:, i]
 
+        for ref, i in enumerate(errors):
+            if ref == 2:
+                boxplot = ax[count, ref].boxplot(i[:, 0:2], patch_artist=True)
+                ax[count, ref].set_xticklabels(labels[0:2])
+            else:
+                boxplot = ax[count, ref].boxplot(i, patch_artist=True)
+                ax[count, ref].set_xticklabels(labels)
+            if count == 0:
+                ax[count, ref].title.set_text(text[ref])
+            for j, patch in enumerate(boxplot['boxes']):
+                if len(plot_names[j]) > 9:
+                    alpha = 0.75
+                    hatch = "///"
+                else:
+                    alpha = 1.0
+                    hatch = ""
+                patch.set(alpha=alpha, hatch=hatch, facecolor=colors[j])
+        ax[count, 0].set_ylabel("Scenario: ("+str(count+1)+")")
+
+        legend_elements = [Patch(facecolor=colors[i], edgecolor='k', hatch=hatches[i], label=labels[i]) for i in range(4)]
+
+    # ax[0, 0].legend(handles=legend_elements, loc='best')
     plt.show()
