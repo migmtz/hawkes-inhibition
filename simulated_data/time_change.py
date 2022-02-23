@@ -2,7 +2,7 @@ import numpy as np
 from class_and_func.multivariate_exponential_process import multivariate_exponential_hawkes
 from matplotlib import pyplot as plt
 import seaborn as sns
-from dictionary_parameters import dictionary as param_dict
+from simulated_data.dictionary_parameters import dictionary as param_dict
 from scipy.stats import kstest
 
 
