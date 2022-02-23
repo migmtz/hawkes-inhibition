@@ -29,7 +29,7 @@ def obtain_average_estimation(file_name, number, dim, number_estimations):
 
 
 if __name__ == "__main__":
-    number = 9
+    number = 6
 
     a_file = open("traitements1/neuro_data" + str(number) + ".pkl", "rb")
     tList, filtre_dict_orig, orig_dict_filtre = pickle.load(a_file)
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     print(counting)
     print(np.sum(counting))
 
-    plot_names = ["threshgrad90.0"]
+    plot_names = [""]
     labels = ["MLE"]
     estimations = [obtain_average_estimation(file_name, number, dim, number_estimations) for file_name in plot_names]
 
