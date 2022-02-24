@@ -17,7 +17,7 @@ def obtain_average_estimation(file_name, number, dim, number_estimations):
             result = np.zeros((dim + dim * dim,))
     else:
         result = np.zeros((2 * dim + dim * dim,))
-    with open("estimation/_traitements1_" + str(number) + file_name, 'r') as read_obj:
+    with open("estimation/_traitements2_" + str(number) + file_name, 'r') as read_obj:
         csv_reader = csv.reader(read_obj)
         for row in csv_reader:
             if n < number_estimations:
@@ -29,9 +29,9 @@ def obtain_average_estimation(file_name, number, dim, number_estimations):
 
 
 if __name__ == "__main__":
-    number = 6
+    number = 9
 
-    a_file = open("traitements1/neuro_data" + str(number) + ".pkl", "rb")
+    a_file = open("traitements2/train" + str(number) + ".pkl", "rb")
     tList, filtre_dict_orig, orig_dict_filtre = pickle.load(a_file)
     dim = len(filtre_dict_orig)
     a_file.close()
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     print(counting)
     print(np.sum(counting))
 
-    plot_names = [""]
+    plot_names = ["grad"]
     labels = ["MLE"]
     estimations = [obtain_average_estimation(file_name, number, dim, number_estimations) for file_name in plot_names]
 
@@ -74,7 +74,7 @@ if __name__ == "__main__":
             alpha_est = estimation[dim:-dim].reshape((dim, dim))
             alpha_est[np.abs(alpha_est) <= 1e-16] = 0
             beta_est = estimation[-dim:]
-            beta_est[beta_est < 1e-10] = 1
+            #beta_est[beta_est < 1e-10] = 1
             # print(alpha_est)
         heat_estimated = alpha_est# / beta_est
         # heat_estimated[np.abs(heat_estimated) <= 0.01] = 0
@@ -95,4 +95,6 @@ if __name__ == "__main__":
         # aux[(heat_estimated == 0.0) * (heat_matrix != 0.0)] = -1
         # sns.heatmap(aux, ax=ax[ref][1], cmap=get_continuous_cmap(['#000000', '#9B59B6', '#FFFFFF', '#E67E22']), annot=annot, linewidths=.5, vmin=-2, vmax=1)
         # ax[ref][1].set_title(str(np.round(false_0, 2)) + " " + str(np.round(false_non_0, 2)))
+    fig2, ax2 = plt.subplots()
+    sns.heatmap(beta_est.reshape(len(filtre_dict_orig),1), ax=ax2)
     plt.show()
