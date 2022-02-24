@@ -5,11 +5,13 @@ import matplotlib
 from matplotlib import rcParams
 rcParams['font.family'] = 'serif'
 plt.rcParams["mathtext.fontset"] = "dejavuserif"
+import seaborn as sns
 
 
 if __name__ == "__main__":
     # Set seed
     matplotlib.rcParams.update({'font.size': 14})
+    sns.set_theme()
 
     np.random.seed(3)
 
