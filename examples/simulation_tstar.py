@@ -27,40 +27,72 @@ if __name__ == "__main__":
 
     hawkes.simulate()
 
-    fig, ax = plt.subplots(1,2, figsize=[1.5*5.3, 1.2*3.5])
+    fig, ax = plt.subplots(2,1, figsize=[1.5*5.3, 1.3*3.5], sharey=True)
+    ax[0].plot([-1, 3], [0, 0], c="k", alpha=0.75, linewidth=1)
+    ax[1].plot([-1, 3], [0, 0], c="k", alpha=0.75, linewidth=1)
 
     # Plotting function of intensity and step functions.
     hawkes.plot_intensity(ax=ax, plot_N=False)
 
-    ax[0].set_xlabel("t")
-    ax[0].set_ylabel(f"$\lambda(t)$")
+    ax[0].scatter([t for t,m in hawkes.timestamps[1:4]], [0,0,0], c="k", marker="x", linewidths=1)
+    ax[1].scatter([t for t, m in hawkes.timestamps[1:4]], [0, 0, 0], c="k", marker="x", linewidths=1)
 
-    ax[0].annotate(f"$T_1$", xy=(hawkes.timestamps[1][0], 0), xytext=(hawkes.timestamps[1][0]-0.2, hawkes.intensity_jumps[0][1]-0.1),
+    ax[0].annotate(f"$T_1$", xy=(hawkes.timestamps[1][0], 0), xytext=(hawkes.timestamps[1][0]-0.07, -0.6),
                 annotation_clip=False)
-    ax[0].annotate(f"$T_1^\star$", xy=(hawkes.timestamps[1][0], 0), xytext=(hawkes.timestamps[1][0] - 0.2, hawkes.intensity_jumps[0][1]-0.15),
-                annotation_clip=False)
+    #ax[0].annotate(f"$T_1^\star$", xy=(hawkes.timestamps[1][0], 0), xytext=(hawkes.timestamps[1][0] - 0.2, hawkes.intensity_jumps[0][1]-0.15),
+                #annotation_clip=False)
 
-    ax[0].annotate(f"$T_2$", xy=(hawkes.timestamps[2][0], 0), xytext=(hawkes.timestamps[2][0] - 0.75, -0.06),
+    ax[0].annotate(f"$T_2$", xy=(hawkes.timestamps[2][0], 0), xytext=(hawkes.timestamps[2][0] + 0.01, -0.6),
                 annotation_clip=False)
-    ax[0].annotate(f"$T_2^\star$", xy=(hawkes.timestamps[2][0], 0), xytext=(2.5, -0.06),
-                annotation_clip=False)
+    #ax[0].annotate(f"$T_2^\star$", xy=(hawkes.timestamps[2][0], 0), xytext=(2.5, -0.06),
+                #annotation_clip=False)
 
-    ax[0].annotate(f"$T_3$", xy=(hawkes.timestamps[3][0], 0), xytext=(hawkes.timestamps[3][0] - 0.75, -0.06),
+    ax[0].annotate(f"$T_3$", xy=(hawkes.timestamps[3][0], 0), xytext=(hawkes.timestamps[3][0] - 0.07, -0.6),
                 annotation_clip=False)
-    ax[0].annotate(f"$T_3^\star$", xy=(hawkes.timestamps[3][0], 0), xytext=(6.1, -0.06),
-                annotation_clip=False)
+    #ax[0].annotate(f"$T_3^\star$", xy=(hawkes.timestamps[3][0], 0), xytext=(6.1, -0.06),
+                #annotation_clip=False)
 
-    ax[0].annotate(f"$T_4$", xy=(hawkes.timestamps[4][0], 0), xytext=(hawkes.timestamps[4][0] - 0.15, -0.06),
-                annotation_clip=False)
-    ax[0].annotate(f"$T_4^\star$", xy=(hawkes.timestamps[4][0], 0), xytext=(hawkes.timestamps[4][0] - 0.15, -0.15),
-                annotation_clip=False)
+    #ax[0].annotate(f"$T_4$", xy=(hawkes.timestamps[4][0], 0), xytext=(hawkes.timestamps[4][0] - 0.15, -0.1),
+                #annotation_clip=False)
+    #ax[0].annotate(f"$T_4^\star$", xy=(hawkes.timestamps[4][0], 0), xytext=(hawkes.timestamps[4][0] - 0.15, -0.15),
+                #annotation_clip=False)
 
-    # plt.scatter([0.2, 1.7, 5.75, 11.05, 15], np.array(hawkes.intensity_jumps[1:]) - alpha, linewidths=1.5, s=60,
-    #             facecolors='none', edgecolors='r')
+    ax[1].annotate(f"$T_1$", xy=(hawkes.timestamps[1][0], 0), xytext=(hawkes.timestamps[1][0]-0.07, -0.6),
+                   annotation_clip=False)
+    # ax[0].annotate(f"$T_1^\star$", xy=(hawkes.timestamps[1][0], 0), xytext=(hawkes.timestamps[1][0] - 0.2, hawkes.intensity_jumps[0][1]-0.15),
+    # annotation_clip=False)
+
+    ax[1].annotate(f"$T_2$", xy=(hawkes.timestamps[2][0], 0), xytext=(hawkes.timestamps[2][0]+0.01, -0.6),
+                   annotation_clip=False)
+    # ax[0].annotate(f"$T_2^\star$", xy=(hawkes.timestamps[2][0], 0), xytext=(2.5, -0.06),
+    # annotation_clip=False)
+
+    ax[1].annotate(f"$T_3$", xy=(hawkes.timestamps[3][0], 0), xytext=(hawkes.timestamps[3][0]-0.07, -0.6),
+                   annotation_clip=False)
+
+
+    aux = [alpha[0, m-1] for t,m in hawkes.timestamps[1:4]]
+    ax[0].scatter([t for t,m in hawkes.timestamps[1:4]], np.array(hawkes.intensity_jumps[0][1:4]) - np.array(aux), linewidths=1.5, s=60,
+                 facecolors='none', edgecolors='r')
+    ax[0].scatter([t for t, m in hawkes.timestamps[1:4]], np.array(hawkes.intensity_jumps[0][1:4]),
+                  s=15, c="r", zorder=3)
+    aux = [alpha[1, m - 1] for t, m in hawkes.timestamps[1:4]]
+    ax[1].scatter([t for t, m in hawkes.timestamps[1:4]], np.array(hawkes.intensity_jumps[1][1:4]) - np.array(aux),
+                  linewidths=1.5, s=60,
+                  facecolors='none', edgecolors='r')
+    ax[1].scatter([t for t, m in hawkes.timestamps[1:4]], np.array(hawkes.intensity_jumps[1][1:4]),
+                  s=15, c="r", zorder=3)
     # plt.scatter([0.2, 1.7, 5.75, 11.05, 15], np.array(hawkes.intensity_jumps[1:]), s=15, c="r", zorder=3)
 
-    ax[0].set_xlim((0,2))
+    ax[0].set_xlim((0, 2))
+    ax[1].set_xlim((0, 2))
+    ax[0].set_ylim((-1.5, 3))
 
-    # plt.savefig('cooldownTimesMarkedSerif2.png', bbox_inches='tight', format="png", quality=90)
+    ax[0].set_ylabel("$\lambda^1$")
+    ax[1].set_ylabel("$\lambda^2$")
+
+    ax[1].set_xlabel("$t$")
+
+    plt.savefig('cooldownTimesMarkedMulti.pdf', bbox_inches='tight', format="pdf", quality=90)
 
     plt.show()
