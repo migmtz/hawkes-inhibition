@@ -47,7 +47,7 @@ if __name__ == "__main__":
         # for i in orig_dict_filtre.keys():
         #     number_estimations[i-1] += 1
 
-        plot_names = ["grad"]
+        plot_names = ["threshgrad90.0"]
         labels = ["MLE"]
         estimation = obtain_average_estimation(plot_names[0], number, dim, 1)
         mu_est = estimation[:dim]
@@ -71,21 +71,31 @@ if __name__ == "__main__":
 
     number_estimations[number_estimations == 0] = 1
     mu /= np.amax(number_estimations, axis=1).reshape((250,1))
-    print(alpha[0:2, 0:2], number_estimations[0:2, 0:2])
     alpha /= number_estimations
-    print(alpha[0:2, 0:2])
     beta /= np.amax(number_estimations, axis=1).reshape((250,1))
 
     sns.set_theme()
     fig, axr = plt.subplots(1, len(plot_names))
     ax = axr#.T
     hex_list = ['#FF3333', '#FFFFFF', '#33FF49']
+    blah = get_continuous_cmap(hex_list)
+    blah.set_bad(color=np.array([0,0,0,1]))
 
     # for i in range(250):
     #     alpha[i, i] = 0
-    sns.heatmap(alpha, ax=ax, cmap=get_continuous_cmap(hex_list), center=0, annot=False, linewidths=.5)
-    fig2, ax2 = plt.subplots()
-    sns.heatmap(beta, ax=ax2)
+    a_file = open("traitements2/kept_dimensions.pkl", "rb")
+    estimated_mask = pickle.load(a_file)
+    a_file.close()
+
+    print(alpha[estimated_mask[0], :][:, estimated_mask[0]].shape)
+
+    heatmap = alpha[estimated_mask[0], :][:, estimated_mask[0]]
+    mask = heatmap == 0
+    print(heatmap.shape, mask.shape)
+
+    sns.heatmap(heatmap, ax=ax, cmap=blah, center=0, annot=False, linewidths=.5, mask=mask)
+    # fig2, ax2 = plt.subplots()
+    # sns.heatmap(beta, ax=ax2)
 
     plt.show()
     #
