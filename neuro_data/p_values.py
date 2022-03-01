@@ -9,72 +9,147 @@ from scipy.stats import kstest
 import pickle
 
 
-def obtain_average_estimation(file_name, number, dim, number_estimations):
-    n = 0
-    if file_name[0:4] == "tick":
-        if file_name[5:9] == "beta":
-            result = np.zeros((dim + dim * dim * dim,))
-        else:
-            result = np.zeros((dim + dim * dim,))
-    else:
-        result = np.zeros((2 * dim + dim * dim,))
-    with open("estimation/_traitements1_"+str(number)+file_name, 'r') as read_obj:
-        csv_reader = csv.reader(read_obj)
-        for row in csv_reader:
-            if n < number_estimations:
-                result += np.array([float(i) for i in row])
-                n += 1
-    result /= n
+def obtain_average_estimation(file_name, numbers):
 
-    return result
+    mu = np.zeros((250, 1))
+    alpha = np.zeros((250, 250))
+    beta = np.zeros((250, 1))
+
+    number_estimations = np.zeros((250, 250))
+    for number in numbers:
+        a_file = open("traitements2/train" + str(number) + ".pkl", "rb")
+        tList, filtre_dict_orig, orig_dict_filtre = pickle.load(a_file)
+        dim = len(filtre_dict_orig)
+        a_file.close()
+
+        aux = [[1 if j in orig_dict_filtre.keys() else 0 for j in range(1, 251)] if i in orig_dict_filtre.keys() else [0 for j in range(1, 251)] for i in range(1, 251)]
+
+        number_estimations += np.array(aux)
+
+        # for i in orig_dict_filtre.keys():
+        #     number_estimations[i-1] += 1
+
+        with open("estimation/_traitements2_" + str(number) + file_name, 'r') as read_obj:
+            csv_reader = csv.reader(read_obj)
+            for row in csv_reader:
+                result = np.array([float(i) for i in row])
+
+        mu_est = result[:dim]
+        alpha_est = result[dim:-dim].reshape((dim, dim))
+        alpha_est[np.abs(alpha_est) <= 1e-16] = 0
+        beta_est = result[-dim:]
+
+        for i in range(1, dim + 1):
+            mu[filtre_dict_orig[i] - 1] += mu_est[i - 1]
+            aux = []
+            for j in range(250):
+                if j + 1 in filtre_dict_orig.values():
+                    aux += [alpha_est[i - 1, orig_dict_filtre[j + 1] - 1]]
+                else:
+                    aux += [0]
+
+            alpha[filtre_dict_orig[i] - 1, :] += np.array(aux)
+            beta[filtre_dict_orig[i] - 1] += beta_est[i - 1]
+
+    number_estimations[number_estimations == 0] = 1
+    mu /= np.amax(number_estimations, axis=1).reshape((250, 1))
+    alpha /= number_estimations
+    beta /= np.amax(number_estimations, axis=1).reshape((250, 1))
+
+    # result = np.concatenate((mu.squeeze(), np.concatenate((alpha.ravel(), beta.squeeze()))))
+
+    return mu, alpha, beta
 
 
 if __name__ == "__main__":
-    number = 9
+    np.random.seed(1)
+    plot_names = ["grad", "threshgrad40.0", "threshgrad50.0", "threshgrad60.0", "threshgrad75.0", "threshgrad90.0"]
+    labels = ["MLE", "thresh40", "thresh50", "thresh60", "thresh75", "thresh90"]
 
-    a_file = open("traitements1/neuro_data" + str(number) + ".pkl", "rb")
-    tList, filtre_dict_orig, orig_dict_filtre = pickle.load(a_file)
-    dim = len(filtre_dict_orig)
-    a_file.close()
-    number_simulations = 5
+    estimations = []
 
-    plot_names = ["grad", "threshgrad90.0"]
-    labels = ["MLE", "MLE-thresh75"]
-    estimations = [obtain_average_estimation(file_name, number, dim, 1) for file_name in plot_names]
+    fig, ax = plt.subplots()
 
-    p_values = np.zeros((len(plot_names), dim+1)) # As in the table
+    for label, file_name in zip(labels, plot_names):
+        mu, alpha, beta = obtain_average_estimation(file_name, range(1, 11))
+        estimations += [(mu, alpha, beta)]
 
-    test_times = tList
+        p_values = np.zeros((250+1, ))
+        mask = np.zeros((250+1, ))
 
-    for ref, file_name in enumerate(plot_names):
-        if file_name[0:4] == "tick":
-            test_transformed, transformed_dimensional = time_change(np.concatenate((estimations[ref],beta.squeeze())), test_times)
-        else:
-            test_transformed, transformed_dimensional = time_change(estimations[ref], test_times)
+        for number in range(1, 11):
+            a_file = open("traitements2/test" + str(number) + ".pkl", "rb")
+            tList, filtre_dict_orig, orig_dict_filtre = pickle.load(a_file)
+            dim = len(filtre_dict_orig)
+            a_file.close()
 
-        p_values[ref, dim] += kstest(test_transformed, cdf="expon", mode="exact").pvalue
-        for ref_dim, i in enumerate(transformed_dimensional):
-            p_values[ref, ref_dim] += kstest(i, cdf="expon", mode="exact").pvalue
+            aux = [i-1 for i in filtre_dict_orig.values()]
+            mask += np.array([1 if i in filtre_dict_orig.values() else 0 for i in range(1, 251)] + [1])
 
-    p_values = np.round(p_values, 3)
+            mu_aux = mu[aux, :]
+            alpha_aux = alpha[aux, :][:, aux]
+            beta_aux = beta[aux, :]
 
-    for ref, file_name in enumerate(plot_names):
-        print(labels[ref] + " estimated values p-value: ", p_values[ref])
+            estimation = np.concatenate((mu_aux.squeeze(), np.concatenate((alpha_aux.ravel(), beta_aux.squeeze()))))
+            test_transformed, transformed_dimensional = time_change(estimation, tList)
 
-    a = p_values
-    print(" \\\\\n".join([" & ".join(map(str, line)) for line in a]))
+            p_values[250] += kstest(test_transformed, cdf="expon", mode="exact").pvalue
 
-    fig,ax = plt.subplots()
-    for ref, j in enumerate(p_values):
-        ax.scatter([i for i in range(dim+1)], np.sort(j), label=labels[ref])
-    ax.plot([i for i in range(dim+1)], [(i*0.05)/(dim+1) for i in range(dim+1)])
+            for ref_dim, i in enumerate(transformed_dimensional):
+                p_values[filtre_dict_orig[ref_dim+1] - 1] += kstest(i, cdf="expon", mode="exact").pvalue
 
-    #         if file_name[0:4] == "" or file_name[0:3] == "pen":
-    #             ax.scatter([i for i in range(dim)], np.sort(plist), label=file_name)
-    #
-    #     ax.plot([i for i in range(dim)], [0.05 for i in range(dim)], c="g", linestyle="dashed")
-    #     ax.plot([i for i in range(dim)], [0.05/(dim-i) for i in range(dim)], c="b", linestyle="dashed")
-    #
-    # if dim > 5:
+        p_values[mask != 0] /= mask[mask != 0]
+        p_values = p_values[mask != 0]
+
+        p_values = np.round(p_values, 3)
+
+        a = p_values.reshape((1, len(p_values)))
+        print(" \\\\\n".join([" & ".join(map(str, line)) for line in a]))
+
+        sc = ax.scatter([i for i in range(len(p_values))], np.sort(p_values), label=label, s=16)
+        argsort = np.argsort(p_values)
+        ax.scatter([[np.argmax(argsort)]], [p_values[-1]], c=sc.get_edgecolor(), marker="X", s=64)
+
+    ax.plot([i for i in range(len(p_values))], [(i * 0.05) / len(p_values) for i in range(len(p_values))])
     plt.legend()
     plt.show()
+
+
+    # dim = 250
+    #
+    # p_values = np.zeros((len(plot_names), dim+1)) # As in the table
+    #
+    # test_times = tList
+    #
+    # for ref, file_name in enumerate(plot_names):
+    #     if file_name[0:4] == "tick":
+    #         test_transformed, transformed_dimensional = time_change(np.concatenate((estimations[ref],beta.squeeze())), test_times)
+    #     else:
+    #         test_transformed, transformed_dimensional = time_change(estimations[ref], test_times)
+    #
+    #     p_values[ref, dim] += kstest(test_transformed, cdf="expon", mode="exact").pvalue
+    #     for ref_dim, i in enumerate(transformed_dimensional):
+    #         p_values[ref, ref_dim] += kstest(i, cdf="expon", mode="exact").pvalue
+    #
+    # p_values = np.round(p_values, 3)
+    #
+    # for ref, file_name in enumerate(plot_names):
+    #     print(labels[ref] + " estimated values p-value: ", p_values[ref])
+    #
+    # a = p_values
+    # print(" \\\\\n".join([" & ".join(map(str, line)) for line in a]))
+    #
+    # fig,ax = plt.subplots()
+    # for ref, j in enumerate(p_values):
+    #     ax.scatter([i for i in range(dim+1)], np.sort(j), label=labels[ref])
+    # ax.plot([i for i in range(dim+1)], [(i*0.05)/(dim+1) for i in range(dim+1)])
+    #
+    # #         if file_name[0:4] == "" or file_name[0:3] == "pen":
+    # #             ax.scatter([i for i in range(dim)], np.sort(plist), label=file_name)
+    # #
+    # #     ax.plot([i for i in range(dim)], [0.05 for i in range(dim)], c="g", linestyle="dashed")
+    # #     ax.plot([i for i in range(dim)], [0.05/(dim-i) for i in range(dim)], c="b", linestyle="dashed")
+    # #
+    # # if dim > 5:
+    # plt.legend()
+    # plt.show()
