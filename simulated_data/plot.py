@@ -34,7 +34,7 @@ colors = ["orange", "orange", "g", "b", "g", "b"]
 
 
 if __name__ == "__main__":
-    number = 0
+    number = 1
     theta = param_dict[number]
     dim = int(np.sqrt(1 + theta.shape[0]) - 1)
     number_estimations = 25

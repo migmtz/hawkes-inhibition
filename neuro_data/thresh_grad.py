@@ -20,7 +20,7 @@ def obtain_average_estimation(file_name, number, dim, number_estimations):
             result = np.zeros((dim + dim * dim,))
     else:
         result = np.zeros((2 * dim + dim * dim,))
-    with open("estimation/_traitements1_" + str(number) + file_name, 'r') as read_obj:
+    with open("estimation/_traitements2_" + str(number) + file_name, 'r') as read_obj:
         csv_reader = csv.reader(read_obj)
         for row in csv_reader:
             if n < number_estimations:
@@ -214,30 +214,31 @@ class multivariate_estimator_bfgs_non_penalized2(object):
 if __name__ == "__main__":
     np.random.seed(0)
 
-    number = 9
-    a_file = open("traitements1/neuro_data" + str(number) + ".pkl", "rb")
-    tList, filtre_dict_orig, orig_dict_filtre = pickle.load(a_file)
-    print(tList[0], tList[-1])
-    dim = len(filtre_dict_orig)
-    a_file.close()
+    for number in range(1, 11):
+        a_file = open("traitements2/train" + str(number) + ".pkl", "rb")
+        tList, filtre_dict_orig, orig_dict_filtre = pickle.load(a_file)
+        print(tList[0], tList[-1])
+        dim = len(filtre_dict_orig)
+        a_file.close()
 
-    threshold = 0.9
+        threshold = 0.95
 
-    file_name = "grad"
-    initial = obtain_average_estimation(file_name, number, dim, 1)
+        file_name = "grad"
+        initial = obtain_average_estimation(file_name, number, dim, 1)
 
-    with open("estimation/_traitements1_" + str(number) + 'threshgrad'+str(round(threshold*100, 1)), 'w', newline='') as myfile:
-        wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+        with open("estimation/_traitements2_" + str(number) + 'threshgrad'+str(round(threshold*100, 1)), 'w', newline='') as myfile:
+            wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
 
-        loglikelihood_estimation = multivariate_estimator_bfgs_non_penalized2(dimension=dim, options={"disp": False})
-        #"ftol":1e-16, "gtol":1e-16,
+            loglikelihood_estimation = multivariate_estimator_bfgs_non_penalized2(dimension=dim, options={"disp": False})
+            #"ftol":1e-16, "gtol":1e-16,
 
-        print("Starting estimation...")
-        start_time = time.time()
-        res = loglikelihood_estimation.fit(tList, threshold=threshold, initial=initial)
-        end_time = time.time()
-        # print(loglikelihood_estimation.res.x)
+            print("Starting estimation...")
+            start_time = time.time()
+            res = loglikelihood_estimation.fit(tList, threshold=threshold, initial=initial)
+            end_time = time.time()
+            # print(loglikelihood_estimation.res.x)
 
-        wr.writerow(loglikelihood_estimation.res.x.tolist())
+            wr.writerow(loglikelihood_estimation.res.x.tolist())
 
-    print("Time it took: ", (end_time - start_time) // 60, " minutes.")
+        print("Time it took: ", (end_time - start_time) // 60, " minutes.")
+        print("")

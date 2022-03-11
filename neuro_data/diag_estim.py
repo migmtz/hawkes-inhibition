@@ -1,11 +1,12 @@
 import numpy as np
-import pickle
-from class_and_func.estimator_class import multivariate_estimator_bfgs
-from class_and_func.likelihood_functions import multivariate_loglikelihood_simplified, multivariate_loglikelihood_with_grad
-from scipy.optimize import minimize
 import csv
-import time
+from ast import literal_eval as make_tuple
+from class_and_func.likelihood_functions import multivariate_loglikelihood_with_grad, multivariate_loglikelihood_with_grad_pen, multivariate_loglikelihood_simplified
+from scipy import stats
+from scipy.optimize import minimize
+import pickle
 
+import time
 
 class multivariate_estimator_bfgs_grad(object):
     """
@@ -58,11 +59,11 @@ class multivariate_estimator_bfgs_grad(object):
                 self.loss = loss
             self.grad = grad
 
-        self.bounds = [(1e-12, None) for i in range(self.dim)] + [(None, None) for i in range(self.dim * self.dim)] + [
+        self.bounds = [(1e-12, None) for i in range(self.dim)] + [(None, None) if i == j else (0, 1e-16) for i in range(self.dim) for j in range(self.dim)] + [
             (1e-12, None) for i in range(self.dim)]
         if isinstance(initial_guess, str) and initial_guess == "random":
             self.initial_guess = np.concatenate(
-                (np.concatenate((np.ones(self.dim), np.zeros(self.dim * self.dim))), np.ones(self.dim)))
+                (np.concatenate((np.ones(self.dim), np.ones(self.dim * self.dim))), np.ones(self.dim)))
         if options is None:
             self.options = {'disp': False}
         else:
@@ -121,10 +122,13 @@ class multivariate_estimator_bfgs_grad(object):
         return self.mu_estim, self.alpha_estim, self.beta_estim
 
 
-if __name__ == "__main__":
-    numbers = [5,6,7,8,10]
 
-    for number in numbers:
+if __name__ == "__main__":
+
+
+    dim = 250
+
+    for number in range(1,11):
         np.random.seed(0)
 
         a_file = open("traitements2/train" + str(number) + ".pkl", "rb")
@@ -134,7 +138,7 @@ if __name__ == "__main__":
         # print(filtre_dict_orig)
         # print(np.sum([m==212 for i,m in tList]))
         a_file.close()
-        with open("estimation/_traitements2_"+str(number) + 'grad', 'w', newline='') as myfile:
+        with open("estimation/_traitements2_" + str(number) + 'diag', 'w', newline='') as myfile:
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
 
             loglikelihood_estimation = multivariate_estimator_bfgs_grad(dimension=dim, options={"disp": False})

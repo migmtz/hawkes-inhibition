@@ -47,7 +47,7 @@ if __name__ == "__main__":
         # for i in orig_dict_filtre.keys():
         #     number_estimations[i-1] += 1
 
-        plot_names = ["threshgrad90.0"]
+        plot_names = ["grad"]
         labels = ["MLE"]
         estimation = obtain_average_estimation(plot_names[0], number, dim, 1)
         mu_est = estimation[:dim]
@@ -55,7 +55,7 @@ if __name__ == "__main__":
         alpha_est[np.abs(alpha_est) <= 1e-16] = 0
         beta_est = estimation[-dim:]
 
-        print(filtre_dict_orig)
+        #print(filtre_dict_orig)
 
         for i in range(1, dim+1):
             mu[filtre_dict_orig[i] - 1] += mu_est[i - 1]
@@ -79,7 +79,7 @@ if __name__ == "__main__":
     ax = axr#.T
     hex_list = ['#FF3333', '#FFFFFF', '#33FF49']
     blah = get_continuous_cmap(hex_list)
-    blah.set_bad(color=np.array([0,0,0,1]))
+    blah.set_bad(color=np.array([1,1,1,1]))
 
     # for i in range(250):
     #     alpha[i, i] = 0
@@ -87,61 +87,92 @@ if __name__ == "__main__":
     estimated_mask = pickle.load(a_file)
     a_file.close()
 
-    print(alpha[estimated_mask[0], :][:, estimated_mask[0]].shape)
+    #print(alpha[estimated_mask[0], :][:, estimated_mask[0]].shape)
 
-    heatmap = alpha[estimated_mask[0], :][:, estimated_mask[0]]
+    heatmap = alpha[estimated_mask[0], :][:, estimated_mask[0]]/beta[estimated_mask[0], :]
     mask = heatmap == 0
-    print(heatmap.shape, mask.shape)
+    #print(heatmap.shape, mask.shape)
 
     sns.heatmap(heatmap, ax=ax, cmap=blah, center=0, annot=False, linewidths=.5, mask=mask)
-    # fig2, ax2 = plt.subplots()
-    # sns.heatmap(beta, ax=ax2)
+    fig2, ax2 = plt.subplots()
+    sns.heatmap(beta[estimated_mask[0], :], ax=ax2)
 
+    fig3, ax3 = plt.subplots(1, 4, sharey=True)
+
+    diag_list = []
+    beta_list = []
+    min_alpha, max_alpha = 0, 0
+    min_beta, max_beta = 0, 0
+    for z, file_name in enumerate(["grad", "threshgrad90.0"]):
+        mu = np.zeros((250, 1))
+        alpha = np.zeros((250, 250))
+        beta = np.zeros((250, 1))
+
+        number_estimations = np.zeros((250, 250))
+        for number in range(1, 11):
+            a_file = open("traitements2/train" + str(number) + ".pkl", "rb")
+            tList, filtre_dict_orig, orig_dict_filtre = pickle.load(a_file)
+            dim = len(filtre_dict_orig)
+            a_file.close()
+
+            aux = [
+                [1 if j in orig_dict_filtre.keys() else 0 for j in range(1, 251)] if i in orig_dict_filtre.keys() else [
+                    0 for j in range(1, 251)] for i in range(1, 251)]
+
+            number_estimations += np.array(aux)
+
+            # for i in orig_dict_filtre.keys():
+            #     number_estimations[i-1] += 1
+
+            labels = ["MLE"]
+            estimation = obtain_average_estimation(file_name, number, dim, 1)
+            mu_est = estimation[:dim]
+            alpha_est = estimation[dim:-dim].reshape((dim, dim))
+            alpha_est[np.abs(alpha_est) <= 1e-16] = 0
+            beta_est = estimation[-dim:]
+
+            #print(filtre_dict_orig)
+
+            for i in range(1, dim + 1):
+                mu[filtre_dict_orig[i] - 1] += mu_est[i - 1]
+                aux = []
+                for j in range(250):
+                    if j + 1 in filtre_dict_orig.values():
+                        aux += [alpha_est[i - 1, orig_dict_filtre[j + 1] - 1]]
+                    else:
+                        aux += [0]
+
+                alpha[filtre_dict_orig[i] - 1, :] += np.array(aux)
+                beta[filtre_dict_orig[i] - 1] += beta_est[i - 1]
+
+        number_estimations[number_estimations == 0] = 1
+        mu /= np.amax(number_estimations, axis=1).reshape((250, 1))
+        alpha /= number_estimations
+        beta /= np.amax(number_estimations, axis=1).reshape((250, 1))
+
+        beta_list += [beta[estimated_mask[0], :]]
+        diag_list += [np.diag(alpha[estimated_mask[0], :][:, estimated_mask[0]])]
+
+        min_alpha = np.minimum(np.min(diag_list[-1].reshape((223, 1))/beta_list[-1].reshape((223, 1))), min_alpha)
+        max_alpha = np.maximum(np.max(diag_list[-1].reshape((223, 1))/beta_list[-1].reshape((223, 1))), max_alpha)
+        min_beta = np.minimum(np.min(beta_list[-1]), min_beta)
+        max_beta = np.maximum(np.max(beta_list[-1]), max_beta)
+
+    aux = diag_list[1].reshape((223, 1))/beta_list[1].reshape((223, 1))
+    aux2 = np.sort(aux, axis=None)
+    aux3 = np.argsort(aux, axis=None)
+
+    a = beta_list[0].reshape((223, 1))[aux3].reshape((223, 1))
+    b = beta_list[1].reshape((223, 1))[aux3].reshape((223, 1))
+    c = (diag_list[0].reshape((223, 1))/beta_list[0].reshape((223, 1)))[aux3].reshape((223, 1))
+    d = (diag_list[1].reshape((223, 1))/beta_list[1].reshape((223, 1)))[aux3].reshape((223, 1))
+
+    sns.heatmap(a, ax=ax3[0])
+    sns.heatmap(b, ax=ax3[3])
+
+    sns.heatmap(c, ax=ax3[1], cmap=blah, center=0)
+    sns.heatmap(d, ax=ax3[2], cmap=blah, center=0)
+
+    ax3[1].set_title("grad")
+    ax3[2].set_title("thresh")
     plt.show()
-    #
-    # blah = get_continuous_cmap(hex_list)
-    # # blah.set_bad(color=np.array([1,1,1,1]))
-    # # wrong_heatmap = np.sign(heat_matrix)-np.sign(-heat_estimated)*(heat_matrix != 0.0)
-    # # sns.heatmap(wrong_heatmap, ax=ax[2], cmap=get_continuous_cmap(hex_list), center=0, annot=True)
-    #
-    # for ref, estimation in enumerate(estimations):
-    #     if plot_names[ref][0:4] == "tick":
-    #         # if plot_names[ref][5:9] == "beta":
-    #         #     mu_est = estimation[:dim]
-    #         #     alpha_est = np.mean(estimation[dim:].reshape((dim, dim, dim)), axis=0)
-    #         #     beta_est = beta
-    #         # else:
-    #         mu_est = estimation[:dim]
-    #         alpha_est = estimation[dim:].reshape((dim, dim))
-    #         alpha_est[np.abs(alpha_est) <= 1e-16] = 0
-    #         beta_est = beta
-    #
-    #     else:
-    #         mu_est = estimation[:dim]
-    #         alpha_est = estimation[dim:-dim].reshape((dim, dim))
-    #         alpha_est[np.abs(alpha_est) <= 1e-16] = 0
-    #         beta_est = estimation[-dim:]
-    #         #beta_est[beta_est < 1e-10] = 1
-    #         # print(alpha_est)
-    #     heat_estimated = alpha_est# / beta_est
-    #     # heat_estimated[np.abs(heat_estimated) <= 0.01] = 0
-    #
-    #     sns.heatmap(heat_estimated, ax=ax, cmap=get_continuous_cmap(hex_list), center=0, annot=annot, linewidths=.5)
-    #     ax.set_title(labels[ref])
-    #
-    #     # aux = sign * np.abs(np.abs(np.sign(heat_matrix)) - np.abs(np.sign(heat_estimated)))
-    #
-    #     # false_0 = 1-np.sum(sign * np.abs(np.abs(np.sign(heat_matrix)) - np.abs(np.sign(heat_estimated))) == -1) / (
-    #     #     np.sum(sign == -1))
-    #     # false_non_0 = 1-np.sum(sign * np.abs(np.abs(np.sign(heat_matrix)) - np.abs(np.sign(heat_estimated))) == 1) / (
-    #     #     np.sum(sign == 1))
-    #
-    #     # aux = np.zeros((dim, dim))
-    #     # aux[np.abs(np.sign(heat_estimated) - np.sign(heat_matrix)) == 2] = -2
-    #     # aux[(heat_estimated != 0.0) * (heat_matrix == 0.0)] = 1
-    #     # aux[(heat_estimated == 0.0) * (heat_matrix != 0.0)] = -1
-    #     # sns.heatmap(aux, ax=ax[ref][1], cmap=get_continuous_cmap(['#000000', '#9B59B6', '#FFFFFF', '#E67E22']), annot=annot, linewidths=.5, vmin=-2, vmax=1)
-    #     # ax[ref][1].set_title(str(np.round(false_0, 2)) + " " + str(np.round(false_non_0, 2)))
-    # fig2, ax2 = plt.subplots()
-    # sns.heatmap(beta_est.reshape(len(filtre_dict_orig),1), ax=ax2)
-    # plt.show()
