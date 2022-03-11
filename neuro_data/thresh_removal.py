@@ -228,6 +228,7 @@ if __name__ == "__main__":
         a_file.close()
 
         thresh = []
+        removed = []
 
         file_name = "grad"
         initial = obtain_average_estimation(file_name, number, dim, 1)
@@ -243,9 +244,15 @@ if __name__ == "__main__":
                 i += 1
             i -= 1
             thresh += [ordered_alpha[i]]
+            removed += [i/len(alpha)]
         ax[y[number-1], z[number-1]].plot(x, thresh)
         ax[y[number-1], z[number-1]].set_title(str(np.max(alpha)))
         ax[y[number-1], z[number-1]].plot([0.95, 0.95], [0, thresh[-5]])
         ax[y[number - 1], z[number - 1]].plot([0, 0.95], [thresh[-5], thresh[-5]])
+
+        ax2 = ax[y[number-1], z[number-1]].twinx()
+        ax2.plot(x, removed, c="r")
+
+    fig.tight_layout()  # otherwise the right y-label is slightly clipped
 
     plt.show()
