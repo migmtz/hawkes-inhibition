@@ -47,13 +47,18 @@ if __name__ == "__main__":
         # for i in orig_dict_filtre.keys():
         #     number_estimations[i-1] += 1
 
-        plot_names = ["grad"]
+        plot_names = ["tick"]
         labels = ["MLE"]
         estimation = obtain_average_estimation(plot_names[0], number, dim, 1)
         mu_est = estimation[:dim]
-        alpha_est = estimation[dim:-dim].reshape((dim, dim))
-        alpha_est[np.abs(alpha_est) <= 1e-16] = 0
-        beta_est = estimation[-dim:]
+        if plot_names[0] == "tick":
+            alpha_est = estimation[dim:].reshape((dim, dim))
+            beta_est = 4.5 * np.ones((dim,))
+
+        else:
+            alpha_est = estimation[dim:-dim].reshape((dim, dim))
+            alpha_est[np.abs(alpha_est) <= 1e-16] = 0
+            beta_est = estimation[-dim:]
 
         #print(filtre_dict_orig)
 
@@ -89,7 +94,7 @@ if __name__ == "__main__":
 
     #print(alpha[estimated_mask[0], :][:, estimated_mask[0]].shape)
 
-    heatmap = alpha[estimated_mask[0], :][:, estimated_mask[0]]/beta[estimated_mask[0], :]
+    heatmap = alpha[estimated_mask[0], :][:, estimated_mask[0]]#/beta[estimated_mask[0], :]
     mask = heatmap == 0
     #print(heatmap.shape, mask.shape)
 

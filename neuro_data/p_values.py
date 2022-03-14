@@ -35,9 +35,13 @@ def obtain_average_estimation(file_name, numbers):
                 result = np.array([float(i) for i in row])
 
         mu_est = result[:dim]
-        alpha_est = result[dim:-dim].reshape((dim, dim))
-        alpha_est[np.abs(alpha_est) <= 1e-16] = 0
-        beta_est = result[-dim:]
+        if file_name == "tick":
+            alpha_est = result[dim:].reshape((dim, dim))
+            beta_est = 4.5*np.ones((dim,))
+        else:
+            alpha_est = result[dim:-dim].reshape((dim, dim))
+            alpha_est[np.abs(alpha_est) <= 1e-16] = 0
+            beta_est = result[-dim:]
 
         for i in range(1, dim + 1):
             mu[filtre_dict_orig[i] - 1] += mu_est[i - 1]
@@ -63,8 +67,8 @@ def obtain_average_estimation(file_name, numbers):
 
 if __name__ == "__main__":
     np.random.seed(1)
-    plot_names = ["grad", "threshgrad40.0", "threshgrad50.0", "threshgrad60.0", "threshgrad75.0", "threshgrad90.0", "threshgrad95.0"]
-    labels = ["MLE", "thresh40", "thresh50", "thresh60", "thresh75", "thresh90", "thresh95"]
+    plot_names = ["grad", "threshgrad40.0", "threshgrad50.0", "threshgrad60.0", "threshgrad75.0", "threshgrad90.0", "threshgrad95.0", "diag"]
+    labels = ["MLE", "thresh40", "thresh50", "thresh60", "thresh75", "thresh90", "thresh95", "diag"]
 
     estimations = []
 
@@ -78,7 +82,8 @@ if __name__ == "__main__":
         mask = np.zeros((250+1, ))
 
         for number in range(1, 11):
-            a_file = open("traitements2/test" + str(number) + ".pkl", "rb")
+
+            a_file = open("traitements2/testcomplete" + str(number) + ".pkl", "rb")
             tList, filtre_dict_orig, orig_dict_filtre = pickle.load(a_file)
             dim = len(filtre_dict_orig)
             a_file.close()
@@ -91,12 +96,21 @@ if __name__ == "__main__":
             beta_aux = beta[aux, :]
 
             estimation = np.concatenate((mu_aux.squeeze(), np.concatenate((alpha_aux.ravel(), beta_aux.squeeze()))))
+            help = np.array([t for (t,m) in tList if m != 0])
+
             test_transformed, transformed_dimensional = time_change(estimation, tList)
 
-            p_values[250] += kstest(test_transformed, cdf="expon", mode="exact").pvalue
+            if 0.0 in test_transformed:
+                p_values[250] += 0
+            else:
+                print("not oupsi bitch")
+                p_values[250] += kstest(test_transformed, cdf="expon", mode="exact").pvalue
 
             for ref_dim, i in enumerate(transformed_dimensional):
-                p_values[filtre_dict_orig[ref_dim+1] - 1] += kstest(i, cdf="expon", mode="exact").pvalue
+                if 0.0 in i:
+                    p_values[filtre_dict_orig[ref_dim + 1] - 1] += 0
+                else:
+                    p_values[filtre_dict_orig[ref_dim+1] - 1] += kstest(i, cdf="expon", mode="exact").pvalue
 
         p_values[mask != 0] /= mask[mask != 0]
         p_values = p_values[mask != 0]
@@ -114,42 +128,3 @@ if __name__ == "__main__":
     plt.legend()
     plt.show()
 
-
-    # dim = 250
-    #
-    # p_values = np.zeros((len(plot_names), dim+1)) # As in the table
-    #
-    # test_times = tList
-    #
-    # for ref, file_name in enumerate(plot_names):
-    #     if file_name[0:4] == "tick":
-    #         test_transformed, transformed_dimensional = time_change(np.concatenate((estimations[ref],beta.squeeze())), test_times)
-    #     else:
-    #         test_transformed, transformed_dimensional = time_change(estimations[ref], test_times)
-    #
-    #     p_values[ref, dim] += kstest(test_transformed, cdf="expon", mode="exact").pvalue
-    #     for ref_dim, i in enumerate(transformed_dimensional):
-    #         p_values[ref, ref_dim] += kstest(i, cdf="expon", mode="exact").pvalue
-    #
-    # p_values = np.round(p_values, 3)
-    #
-    # for ref, file_name in enumerate(plot_names):
-    #     print(labels[ref] + " estimated values p-value: ", p_values[ref])
-    #
-    # a = p_values
-    # print(" \\\\\n".join([" & ".join(map(str, line)) for line in a]))
-    #
-    # fig,ax = plt.subplots()
-    # for ref, j in enumerate(p_values):
-    #     ax.scatter([i for i in range(dim+1)], np.sort(j), label=labels[ref])
-    # ax.plot([i for i in range(dim+1)], [(i*0.05)/(dim+1) for i in range(dim+1)])
-    #
-    # #         if file_name[0:4] == "" or file_name[0:3] == "pen":
-    # #             ax.scatter([i for i in range(dim)], np.sort(plist), label=file_name)
-    # #
-    # #     ax.plot([i for i in range(dim)], [0.05 for i in range(dim)], c="g", linestyle="dashed")
-    # #     ax.plot([i for i in range(dim)], [0.05/(dim-i) for i in range(dim)], c="b", linestyle="dashed")
-    # #
-    # # if dim > 5:
-    # plt.legend()
-    # plt.show()

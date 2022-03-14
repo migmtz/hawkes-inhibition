@@ -221,7 +221,7 @@ if __name__ == "__main__":
         dim = len(filtre_dict_orig)
         a_file.close()
 
-        threshold = 0.95
+        threshold = 0.2
 
         file_name = "grad"
         initial = obtain_average_estimation(file_name, number, dim, 1)
