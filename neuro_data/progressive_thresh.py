@@ -9,6 +9,7 @@ from class_and_func.colormaps import get_continuous_cmap
 from class_and_func.likelihood_functions import *
 import pickle
 import time
+from class_and_func.colormaps import get_continuous_cmap
 
 
 def obtain_average_estimation(file_name, number, dim, number_estimations):
@@ -169,7 +170,7 @@ class multivariate_estimator_bfgs_non_penalized2(object):
         else:
             self.options = options
 
-    def fit(self, timestamps, threshold=0.01, initial=None):
+    def fit(self, timestamps, threshold=0.01, initial=None, much=1):
         """
         Parameters
         ----------
@@ -182,32 +183,49 @@ class multivariate_estimator_bfgs_non_penalized2(object):
         print("first")
         self.res = initial
         self.initial_guess = self.res
+        hex_list = ['#FF3333', '#FFFFFF', '#33FF49']
+        blah = get_continuous_cmap(hex_list)
+        blah.set_bad(color=np.array([1, 1, 1, 1]))
+
+        for i in range(much):
+            #fig, ax = plt.subplots(num=1)
+            #plt.title(str(i+1))
+            print(i+1, end=" ")
+
+            alpha = np.abs(self.res[self.dim:-self.dim])
+            alpha[alpha <= 1e-16] = 0
+            #heatmap = np.array(self.res[self.dim: -self.dim]).reshape((self.dim, self.dim))
+            #sns.heatmap(heatmap, ax=ax, cmap=blah, center=0, annot=False, linewidths=.5)
+            ordered_alpha = np.sort(alpha)
+            norm = np.sum(ordered_alpha)
+            aux, i = 0, 0
+            while aux <= threshold:
+                aux += ordered_alpha[i] / norm
+                i += 1
+            i -= 1
+            thresh = ordered_alpha[i]  # We erase those STRICTLY lower
+            self.bounds = [(1e-12, None) for i in range(self.dim)] + [(None, None) if i >= thresh else (0, 1e-16)
+                                                                      for i in alpha] + [
+                              (1e-12, None) for i in range(self.dim)]
+            self.initial_guess = np.concatenate(
+                    (np.concatenate((np.ones(self.dim), np.zeros(self.dim * self.dim))), np.ones(self.dim)))
+            self.res = minimize(self.loss, self.initial_guess, method="L-BFGS-B",jac=self.grad,
+                                args=(timestamps, self.dim), bounds=self.bounds,
+                                options=self.options).x
+            self.initial_guess = self.res
+
+        print(self.res)
+
+        self.mu_estim = np.array(self.res[0: self.dim])
+        self.alpha_estim = np.array(self.res[self.dim: -self.dim]).reshape((self.dim, self.dim))
+        self.beta_estim = np.array(self.res[-self.dim:])
+
+        #fig, ax = plt.subplots(num=1)
 
         alpha = np.abs(self.res[self.dim:-self.dim])
-        ordered_alpha = np.sort(alpha)
-        norm = np.sum(ordered_alpha)
-        aux, i = 0, 0
-        while aux <= threshold:
-            aux += ordered_alpha[i] / norm
-            i += 1
-        i -= 1
-        thresh = ordered_alpha[i]  # We erase those STRICTLY lower
-        print(self.options)
-        self.bounds = [(1e-12, None) for i in range(self.dim)] + [(None, None) if i >= thresh else (0, 1e-16)
-                                                                  for i in alpha] + [
-                          (1e-12, None) for i in range(self.dim)]
-        print("second")
-        #self.initial_guess = np.concatenate(
-                #(np.concatenate((np.ones(self.dim), np.zeros(self.dim * self.dim))), np.ones(self.dim)))
-        self.res = minimize(self.loss, self.initial_guess, method="L-BFGS-B",jac=self.grad,
-                            args=(timestamps, self.dim), bounds=self.bounds,
-                            options=self.options)
-
-        print(self.res.x)
-
-        self.mu_estim = np.array(self.res.x[0: self.dim])
-        self.alpha_estim = np.array(self.res.x[self.dim: -self.dim]).reshape((self.dim, self.dim))
-        self.beta_estim = np.array(self.res.x[-self.dim:])
+        alpha[alpha <= 1e-16] = 0
+        #sns.heatmap(self.alpha_estim, ax=ax, cmap=blah, center=0, annot=False, linewidths=.5)
+        #plt.show()
 
         return self.mu_estim, self.alpha_estim, self.beta_estim
 
@@ -222,12 +240,13 @@ if __name__ == "__main__":
         dim = len(filtre_dict_orig)
         a_file.close()
 
-        threshold = 0.9
+        threshold = 0.20
+        much = 5
 
         file_name = "grad"
         initial = obtain_average_estimation(file_name, number, dim, 1)
 
-        with open("estimation/_traitements2_" + str(number) + 'threshgradrevisited'+str(round(threshold*100, 1)), 'w', newline='') as myfile:
+        with open("estimation/_traitements2_" + str(number) + 'threshprog'+str(round(threshold*100, 1)), 'w', newline='') as myfile:
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
 
             loglikelihood_estimation = multivariate_estimator_bfgs_non_penalized2(dimension=dim, options={"disp": False})
@@ -235,11 +254,11 @@ if __name__ == "__main__":
 
             print("Starting estimation...")
             start_time = time.time()
-            res = loglikelihood_estimation.fit(tList, threshold=threshold, initial=initial)
+            res = loglikelihood_estimation.fit(tList, threshold=threshold, initial=initial, much=much)
             end_time = time.time()
             # print(loglikelihood_estimation.res.x)
 
-            wr.writerow(loglikelihood_estimation.res.x.tolist())
+            wr.writerow(loglikelihood_estimation.res.tolist())
 
         print("Time it took: ", (end_time - start_time) // 60, " minutes.")
         print("")

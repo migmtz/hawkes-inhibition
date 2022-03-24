@@ -122,19 +122,19 @@ class multivariate_estimator_bfgs_grad(object):
 
 
 if __name__ == "__main__":
-    numbers = [5,6,7,8,10]
+    numbers = [1]
 
     for number in numbers:
         np.random.seed(0)
 
-        a_file = open("traitements2/train" + str(number) + ".pkl", "rb")
+        a_file = open("traitements2/testcomplete" + str(number) + ".pkl", "rb")
         tList, filtre_dict_orig, orig_dict_filtre = pickle.load(a_file)
         # tList = [(t,m) for t,m in tList]
         dim = len(filtre_dict_orig)
         # print(filtre_dict_orig)
         # print(np.sum([m==212 for i,m in tList]))
         a_file.close()
-        with open("estimation/_traitements2_"+str(number) + 'grad', 'w', newline='') as myfile:
+        with open("estimation/_traitements2_"+str(number) + 'gradcomplete', 'w', newline='') as myfile:
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
 
             loglikelihood_estimation = multivariate_estimator_bfgs_grad(dimension=dim, options={"disp": False})

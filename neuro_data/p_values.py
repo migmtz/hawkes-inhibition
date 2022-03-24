@@ -67,11 +67,12 @@ def obtain_average_estimation(file_name, numbers):
 
 if __name__ == "__main__":
     np.random.seed(1)
-    plot_names = ["grad", "threshgrad40.0", "threshgrad50.0", "threshgrad60.0", "threshgrad75.0", "threshgrad90.0", "threshgrad95.0", "diag"]
-    labels = ["MLE", "thresh40", "thresh50", "thresh60", "thresh75", "thresh90", "thresh95", "diag"]
+    plot_names = ["grad", "threshgrad20.0", "threshgrad40.0", "threshgrad50.0", "threshgrad60.0", "threshgrad75.0", "threshgrad90.0", "threshgrad95.0", "diag"]
+    labels = ["MLE", "MLE-0.20", "MLE-0.40", "MLE-0.50", "MLE-0.60", "MLE-0.75", "MLE-0.90", "MLE-0.95", "Diag"]
 
     estimations = []
 
+    sns.set_theme()
     fig, ax = plt.subplots()
 
     for label, file_name in zip(labels, plot_names):
@@ -83,7 +84,7 @@ if __name__ == "__main__":
 
         for number in range(1, 11):
 
-            a_file = open("traitements2/testcomplete" + str(number) + ".pkl", "rb")
+            a_file = open("traitements2/test" + str(number) + ".pkl", "rb")
             tList, filtre_dict_orig, orig_dict_filtre = pickle.load(a_file)
             dim = len(filtre_dict_orig)
             a_file.close()
@@ -97,8 +98,21 @@ if __name__ == "__main__":
 
             estimation = np.concatenate((mu_aux.squeeze(), np.concatenate((alpha_aux.ravel(), beta_aux.squeeze()))))
             help = np.array([t for (t,m) in tList if m != 0])
+            help = np.argwhere((help[1:] - help[:-1]) == 0.0)
 
-            test_transformed, transformed_dimensional = time_change(estimation, tList)
+            definitive_list = []
+            j = 1
+            for i in range(len(tList)):
+                if i - 2 in help:
+                    definitive_list += [(tList[i][0] + j*(1e-10), tList[i][1])]
+                    j += 1
+                else:
+                    definitive_list += [(tList[i][0], tList[i][1])]
+
+            #help = np.array([t for (t, m) in definitive_list if m != 0])
+            #help = np.argwhere((help[1:] - help[:-1]) == 0.0)
+
+            test_transformed, transformed_dimensional = time_change(estimation, definitive_list)
 
             if 0.0 in test_transformed:
                 p_values[250] += 0
@@ -115,16 +129,16 @@ if __name__ == "__main__":
         p_values[mask != 0] /= mask[mask != 0]
         p_values = p_values[mask != 0]
 
-        p_values = np.round(p_values, 3)
+        p_values = np.round(p_values, 5)
 
         a = p_values.reshape((1, len(p_values)))
         print(" \\\\\n".join([" & ".join(map(str, line)) for line in a]))
 
-        sc = ax.scatter([i for i in range(len(p_values))], np.sort(p_values), label=label, s=16)
+        sc = ax.scatter([i for i in range(len(p_values))], np.sort(p_values), label=label, s=32)
         argsort = np.argsort(p_values)
-        ax.scatter([[np.argmax(argsort)]], [p_values[-1]], c=sc.get_edgecolor(), marker="X", s=64)
+        ax.scatter([[np.argmax(argsort)]], [p_values[-1]], c=sc.get_edgecolor(), marker="X", s=256, edgecolors="k")
 
     ax.plot([i for i in range(len(p_values))], [(i * 0.05) / len(p_values) for i in range(len(p_values))])
-    plt.legend()
+    plt.legend(prop={'size': 18})
     plt.show()
 

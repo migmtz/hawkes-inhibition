@@ -1,16 +1,13 @@
 import numpy as np
 import csv
-from ast import literal_eval as make_tuple
 import pickle
 import seaborn as sns
 from matplotlib import pyplot as plt
-from matplotlib import cm
 from class_and_func.colormaps import get_continuous_cmap
 import networkx as nx
 
 from networkx.convert_matrix import to_numpy_matrix
 from numpy.linalg import eig
-from scipy.sparse import csc_matrix
 from matplotlib.pyplot import cm
 import networkx
 
@@ -117,7 +114,7 @@ if __name__ == "__main__":
         # for i in orig_dict_filtre.keys():
         #     number_estimations[i-1] += 1
 
-        plot_names = ["threshgrad95.0"]
+        plot_names = ["threshgrad90.0"]
         labels = ["MLE"]
         estimation = obtain_average_estimation(plot_names[0], number, dim, 1)
         mu_est = estimation[:dim]
@@ -125,7 +122,7 @@ if __name__ == "__main__":
         alpha_est[np.abs(alpha_est) <= 1e-16] = 0
         beta_est = estimation[-dim:]
 
-        print(filtre_dict_orig)
+        #print(filtre_dict_orig)
 
         for i in range(1, dim+1):
             mu[filtre_dict_orig[i] - 1] += mu_est[i - 1]
@@ -141,14 +138,13 @@ if __name__ == "__main__":
 
     number_estimations[number_estimations == 0] = 1
     mu /= np.amax(number_estimations, axis=1).reshape((250,1))
-    print(alpha[0:2, 0:2], number_estimations[0:2, 0:2])
+    #print(alpha[0:2, 0:2], number_estimations[0:2, 0:2])
     alpha /= number_estimations
-    print(alpha[0:2, 0:2])
+    #print(alpha[0:2, 0:2])
     beta /= np.amax(number_estimations, axis=1).reshape((250,1))
 
     sns.set_theme()
-    fig, axr = plt.subplots(1, len(plot_names))
-    ax = axr#.T
+
     hex_list = ['#FF3333', '#FFFFFF', '#33FF49']
     blah = get_continuous_cmap(hex_list)
     blah.set_bad(color=np.array([0,0,0,1]))
@@ -159,42 +155,84 @@ if __name__ == "__main__":
     estimated_mask = pickle.load(a_file)
     a_file.close()
 
-    print(alpha[estimated_mask[0], :][:, estimated_mask[0]].shape)
+    #print(alpha[estimated_mask[0], :][:, estimated_mask[0]].shape)
 
     heatmap = alpha[estimated_mask[0], :][:, estimated_mask[0]]
+    beta = beta[estimated_mask[0], :]
 
     n = np.sum(estimated_mask[0])
+    fig, ax = plt.subplots()
     G = nx.DiGraph()
     G.add_nodes_from(range(1, n+1))
 
-    print(heatmap.shape, n)
+    #print(heatmap.shape, n)
     for i in range(n):
         for j in range(n):
             aux = heatmap[i, j]
-            if aux != 0.0 and i!=j:
-                G.add_edge(i+1, j+1)
+            G.add_edge(i+1, j+1, weight=np.abs(aux), intensity=aux)
 
-    pos = nx.circular_layout(G)
-    nodes = nx.draw_networkx_nodes(G, pos,node_size=1.5, node_color="indigo")
-    edges = nx.draw_networkx_edges(
-        G,
-        pos,
-        arrowstyle="->",
-        arrowsize=5,
-        width=0.5,
-        alpha=0.3
-    )
+    np.random.seed(5)
+    pos = nx.spring_layout(G)
+    #nx.draw(G, with_labels=True)
+    np.random.seed(5)
+    #only = np.random.choice(range(1, 224), size=3, replace=False)
+    only = range(1,224)
+    print(only)
+    pos_self = [i for i,j in G.edges() if G[i][j]["intensity"] >= 0 and i == j and i in only]
+    neg_self = [i for i,j in G.edges() if G[i][j]["intensity"] < 0 and i == j and i in only]
+    positive_strong = [(i, j) for i,j in G.edges() if G[i][j]["intensity"] > 0 and G[i][j]["intensity"]/beta[i-1] > 0.25 and i!= j and (i in only or j in only)]
+    negative_strong = [(i, j) for i, j in G.edges() if G[i][j]["intensity"] < 0 and G[i][j]["intensity"]/beta[i-1] < -0.25 and i!= j and (i in only or j in only)]
+    positive_weak = [(i, j) for i, j in G.edges() if
+                       G[i][j]["intensity"] > 0 and G[i][j]["intensity"] / beta[i - 1] < 0.25 and i != j and (
+                                   i in only or j in only)]
+    negative_weak = [(i, j) for i, j in G.edges() if
+                       G[i][j]["intensity"] < 0 and G[i][j]["intensity"] / beta[i - 1] > -0.25 and i != j and (
+                                   i in only or j in only)]
+    others = [(i, j) for i, j in G.edges() if G[i][j]["intensity"] < 0 and i != j and (i not in only and j not in only)]
+    nodes_pos = nx.draw_networkx_nodes(G, pos, node_size=100, nodelist=pos_self, node_color="g", edgecolors="k", ax=ax)
+    nodes_neg = nx.draw_networkx_nodes(G, pos, node_size=100, nodelist=neg_self, node_color="r", edgecolors="k", ax=ax)
+    weak_edges_pos = nx.draw_networkx_edges(G, pos, width=1, node_size=100, style=":", edgelist=positive_weak, edge_color="g",
+                                              arrowsize=3, alpha=0.25, ax=ax)
+    weak_edges_neg = nx.draw_networkx_edges(G, pos, width=1, node_size=100, style=":", edgelist=negative_weak, edge_color="r",
+                                              arrowsize=3, alpha=0.25, ax=ax)
+    strong_edges_pos = nx.draw_networkx_edges(G, pos, width=1.3, node_size=100, edgelist=positive_strong, edge_color="k",
+                                              arrowsize=3, alpha=1, ax=ax)
+    strong_edges_pos = nx.draw_networkx_edges(G, pos, width=1, node_size=100, edgelist=positive_strong, edge_color="g",
+                                              arrowsize=3, alpha=1, ax=ax)
+    strong_edges_neg = nx.draw_networkx_edges(G, pos, width=1.3, node_size=100, edgelist=negative_strong, edge_color="k",
+                                              arrowsize=3, alpha=1, ax=ax)
+    strong_edges_neg = nx.draw_networkx_edges(G, pos, width=1, node_size=100, edgelist=negative_strong, edge_color="r",
+                                              arrowsize=3, alpha=1, ax=ax)
+    extra = nx.draw_networkx_edges(G, pos, width=1, node_size=100, edgelist=others, edge_color="k", arrowsize=3,
+                                   alpha=0.01, ax=ax)
+
+    # A tree network (sort of)
+    #nx.write_dot(G, 'test.dot')
 
     # set alpha value for each edge
 
     #c = nx.clustering(G)
 
     #print(c)
+    #
+    # ax = plt.gca()
+    # ax.set_axis_off()
+    # # plt.show()
+    # clf2=Newman2CommunityClassifier(G)
+    # clf2.fit()
+    # plot_communities(G,clf2)
 
-    ax = plt.gca()
-    ax.set_axis_off()
-    # plt.show()
-    clf2=Newman2CommunityClassifier(G)
-    clf2.fit()
-    plot_communities(G,clf2)
+    # fig2, ax2 = plt.subplots()
+    #
+    # show = [i for i, j in G.edges() if G[i][j]["intensity"] >= 0 and i == j]
+    # notshow = [i for i, j in G.edges() if G[i][j]["intensity"] < 0 and i == j]
+    # positive = [(i, j) for i, j in G.edges() if G[i][j]["intensity"] > 0 and i != j]
+    # negative = [(i, j) for i, j in G.edges() if G[i][j]["intensity"] < 0 and i != j]
+    # nodes_pos = nx.draw_networkx_nodes(G, pos, node_size=100, nodelist=pos_self, node_color="g", edgecolors="k", ax=ax)
+    # nodes_neg = nx.draw_networkx_nodes(G, pos, node_size=100, nodelist=neg_self, node_color="r", edgecolors="k", ax=ax)
+    # nodes = nx.draw_networkx_edges(G, pos, width=1, node_size=100, edgelist=positive, edge_color="g", arrowsize=3,
+    #                                alpha=0.3, ax=ax)
+    # edges = nx.draw_networkx_edges(G, pos, width=1, node_size=100, edgelist=negative, edge_color="r", arrowsize=3,
+    #                                alpha=0.3, ax=ax)
+
     plt.show()

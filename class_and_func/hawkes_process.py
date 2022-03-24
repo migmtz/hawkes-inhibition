@@ -164,8 +164,8 @@ class exp_thinning_hawkes(object):
                         -self.beta * (aux_times - T_k)))
 
             ax1.plot([0, self.max_time], [0, 0], c='k', alpha=0.5)
-            if self.alpha < 0:
-                ax1.plot(times, intensities, label="Underlying intensity", c="#1f77b4")
+            #if self.alpha < 0:
+                #ax1.plot(times, intensities, label="Underlying intensity", c="#1f77b4")
             ax1.plot(times, np.maximum(intensities, 0), label="Conditional intensity", c='r')
             ax1.legend()
             ax1.grid()

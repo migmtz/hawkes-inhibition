@@ -47,8 +47,8 @@ if __name__ == "__main__":
         # for i in orig_dict_filtre.keys():
         #     number_estimations[i-1] += 1
 
-        plot_names = ["tick"]
-        labels = ["MLE"]
+        plot_names = ["threshgrad50.0"]
+        labels = ["MLE-90"]
         estimation = obtain_average_estimation(plot_names[0], number, dim, 1)
         mu_est = estimation[:dim]
         if plot_names[0] == "tick":
@@ -90,11 +90,14 @@ if __name__ == "__main__":
     #     alpha[i, i] = 0
     a_file = open("traitements2/kept_dimensions.pkl", "rb")
     estimated_mask = pickle.load(a_file)
+    print(np.sum(estimated_mask))
     a_file.close()
 
     #print(alpha[estimated_mask[0], :][:, estimated_mask[0]].shape)
+    heatmap = alpha[estimated_mask[0], :][:, estimated_mask[0]]/(beta[estimated_mask[0], :])
 
-    heatmap = alpha[estimated_mask[0], :][:, estimated_mask[0]]#/beta[estimated_mask[0], :]
+    print("1-norm:", np.linalg.norm(np.maximum(heatmap, 0), ord=1))
+    print("Spectral radius:", np.max(np.abs(np.linalg.eigvals(np.maximum(heatmap, 0)))))
     mask = heatmap == 0
     #print(heatmap.shape, mask.shape)
 

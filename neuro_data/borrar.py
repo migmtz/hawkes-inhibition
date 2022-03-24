@@ -27,18 +27,21 @@ def obtain_average_estimation(file_name, number, dim, number_estimations):
 
 if __name__ == "__main__":
 
-    for number in range(1, 11):
-        a_file = open("traitements2/train" + str(number) + ".pkl", "rb")
-        tList, filtre_dict_orig, orig_dict_filtre = pickle.load(a_file)
-        dim = len(filtre_dict_orig)
-        print(dim)
-        a_file.close()
+    plot_names = ["grad", "threshgrad90.0", "threshgradrevisited90.0"]
+    for file_name in plot_names:
+        for number in range(1, 11):
+            a_file = open("traitements2/train" + str(number) + ".pkl", "rb")
+            tList, filtre_dict_orig, orig_dict_filtre = pickle.load(a_file)
+            dim = len(filtre_dict_orig)
+            print(dim)
+            a_file.close()
 
-        estimation = obtain_average_estimation("grad", number, dim, 1)
-        mu_est = estimation[:dim].reshape((dim,1))
-        alpha_est = estimation[dim:-dim].reshape((dim, dim))
-        alpha_est[np.abs(alpha_est) <= 1e-16] = 0
-        beta_est = estimation[-dim:].reshape((dim,1))
+            estimation = obtain_average_estimation(file_name, number, dim, 1)
+            mu_est = estimation[:dim].reshape((dim,1))
+            alpha_est = estimation[dim:-dim].reshape((dim, dim))
+            alpha_est[np.abs(alpha_est) <= 1e-16] = 0
+            beta_est = estimation[-dim:].reshape((dim,1))
 
-        mine = multivariate_loglikelihood_simplified((mu_est, alpha_est, beta_est), tList)
-        print("Estimation's loglikelihood", mine)
+            mine = multivariate_loglikelihood_simplified((mu_est, alpha_est, beta_est), tList)
+            print("Estimation's loglikelihood", mine, end=" ")
+        print()
