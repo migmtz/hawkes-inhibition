@@ -6,7 +6,7 @@ from dictionary_parameters import dictionary as param_dict
 from matplotlib import pyplot as plt
 
 if __name__ == "__main__":
-    number = 6
+    number = 7
     theta = param_dict[number]
     dim = int(np.sqrt(1 + theta.shape[0]) - 1)
     mu = param_dict[number][:dim].reshape(dim, 1)

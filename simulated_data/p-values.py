@@ -30,12 +30,13 @@ def obtain_average_estimation(file_name, number, dim, number_estimations):
 
 
 if __name__ == "__main__":
-    number = 3
+
+    number = 2
     print("Estimation number ", str(number))
     theta = param_dict[number]
     print(theta)
     dim = int(np.sqrt(1 + theta.shape[0]) - 1)
-    number_estimations = 5
+    number_estimations = 25
     max_jumps = 5000
 
     mu = np.array(theta[:dim]).reshape((dim, 1))
@@ -44,7 +45,7 @@ if __name__ == "__main__":
 
     # plot_names = ["", "threshgrad20.0", "tick", "tick_bfgs"]
 
-    plot_names = ["", "threshgrad10.0", "tick", "tick_bfgs"]  # , "tick_beta", "tick_beta_bfgs"]
+    plot_names = ["", "threshgrad10.0", "approx", "tick_bfgs"]  # , "tick_beta", "tick_beta_bfgs"]
     estimations = [obtain_average_estimation(file_name, number, dim, number_estimations) for file_name in plot_names]
 
     #print(estimations)

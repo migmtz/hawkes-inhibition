@@ -28,19 +28,19 @@ def obtain_average_estimation(file_name, number, dim, number_estimations):
     return result
 
 
-dict_names = {"":0, "threshgrad10.0":1, "tick":2, "tick_bfgs":3, "tick_beta":4, "tick_beta_bfgs":5}
+dict_names = {"":0, "threshgrad10.0":1, "tick":2, "tick_bfgs":3, "tick_beta":4, "tick_beta_bfgs":5, "approx":2}
 styles = ["solid", "dashdot", "dashed", "dashed", "dotted", "dotted"]
 colors = ["orange", "orange", "g", "b", "g", "b"]
 
 
 if __name__ == "__main__":
-    number = 1
+    number = 2
     theta = param_dict[number]
     dim = int(np.sqrt(1 + theta.shape[0]) - 1)
     number_estimations = 25
 
-    plot_names = ["", "threshgrad10.0", "tick", "tick_bfgs", "tick_beta", "tick_beta_bfgs"]
-    labels = ["MLE", "MLE-$\\varepsilon$", "SGD", "BFGS", "grid-SGD", "grid-BFGS"]
+    plot_names = ["", "threshgrad10.0", "approx", "tick_bfgs", "tick_beta", "tick_beta_bfgs"]
+    labels = ["MLE", "MLE-$\\varepsilon$", "Approx", "BFGS", "grid-SGD", "grid-BFGS"]
     estimations = []
 
     for file_name in plot_names:

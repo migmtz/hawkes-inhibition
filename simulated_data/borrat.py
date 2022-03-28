@@ -122,7 +122,7 @@ class multivariate_estimator_bfgs_non_penalized(object):
 
 if __name__ == "__main__":
     np.random.seed(0)
-    number = 3
+    number = 7
     theta = param_dict[number]
     dim = int(np.sqrt(1 + theta.shape[0]) - 1)
 

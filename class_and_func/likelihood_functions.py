@@ -831,264 +831,93 @@ def lstsquares_(theta, tList, ax=None, dim=None):
     return least_squares_error
 
 
-# def multivariate_loglikelihood_torch(theta, tList, dimensional=False):
-#     """
-#
-#     Parameters
-#     ----------
-#     theta : tuple of array
-#         Tuple containing 3 arrays. First corresponds to vector of baseline intensities mu. Second is a square matrix
-#         corresponding to interaction matrix alpha. Last is vector of recovery rates beta.
-#
-#     tList : list of tuple
-#         List containing tuples (t, m) where t is the time of event and m is the mark (dimension). The marks must go from
-#         1 to nb_of_dimensions.
-#         Important to note that this algorithm expects the first and last time to mark the beginning and
-#         the horizon of the observed process. As such, first and last marks must be equal to 0, signifying that they are
-#         not real event times.
-#         The algorithm checks by itself if this condition is respected, otherwise it sets the beginning at 0 and the end
-#         equal to the last time event.
-#     dimensional : bool
-#         Whether to return the sum of loglikelihood or decomposed in each dimension. Default is False.
-# Returns
-#     -------
-#     likelihood : array of float
-#         Value of likelihood at each process.
-#         The value returned is the opposite of the mathematical likelihood in order to use minimization packages.
-#     """
-#
-#     mu, alpha, beta = theta
-#
-#     mu_alt = torch.abs(mu)
-#     beta_alt = torch.abs(beta)
-#
-#     timestamps = tList.copy()
-#
-#     # We first check if we have the correct beginning and ending.
-#     if timestamps[0][1] > 0:
-#         timestamps = [(0, 0)] + timestamps
-#     if timestamps[-1][1] > 0:
-#         timestamps += [(timestamps[-1][0], 0)]
-#
-#     # Initialise values
-#     tb, mb = timestamps[1]
-#     # Compensator between beginning and first event time
-#     compensator = mu_alt * (tb - timestamps[0][0])
-#     # Intensity before first jump
-#     log_i = torch.zeros(alpha.shape[0], 1)
-#     log_i[mb - 1] = torch.log(mu_alt[mb - 1])
-#     ic = mu_alt + alpha[:, [mb - 1]]
-#     # j=1
-#
-#     for tc, mc in timestamps[2:]:
-#         # First we estimate the compensator
-#         inside_log = (mu_alt - torch.minimum(ic, torch.tensor(0)))/mu_alt
-#         # Restart time
-#         # t_star = tb + torch.log(inside_log)/beta
-#         aux = 1 / inside_log  # inside_log can't be equal to zero (coordinate-wise)
-#         aux = torch.minimum(torch.tensor(1), aux)
-#
-#         compensator += ((tb + torch.log(inside_log)/beta_alt) < tc)*(mu_alt*(tc-tb - torch.log(inside_log)/beta_alt)) + ((ic-mu_alt)/beta_alt)*(aux - torch.exp(-beta_alt*(tc-tb)))
-#
-#         # Then, estimation of intensity before next jump.
-#         if mc > 0:
-#             ic = mu_alt + (ic - mu_alt) * torch.exp(-beta_alt * (tc - tb))
-#
-#             if ic[mc - 1] <= 0.0:
-#                 # print("oh no", ic,mc, tc)
-#                 # res = 1e8
-#
-#                 # rayon_spec = np.max(np.abs(np.linalg.eig(np.abs(alpha) / beta)[0]))
-#                 # rayon_spec = min(rayon_spec, 0.999)
-#                 # if 2*(tList[-1][0])/(1-rayon_spec) < 0:
-#                 #     print("wut")
-#                 # res = 2*(tList[-1][0])/(1-rayon_spec)
-#
-#                 res = 1e8 + (
-#                             torch.sum((mu_alt + 1) ** 2) + torch.sum((alpha + 1) ** 2) + torch.sum((beta_alt + 1) ** 2))
-#                 return res
-#             else:
-#                 log_i[mc - 1] = log_i[mc - 1] + torch.log(ic[mc - 1])
-#             # j += 1
-#             # print(j, ic, 1+0.45*(1-0.5**(j-1)))
-#             ic = ic + alpha[:, [mc - 1]]
-#
-#         tb = tc
-#     likelihood = log_i - compensator
-#     if not (dimensional):
-#         likelihood = torch.sum(likelihood)
-#     return -likelihood
-#
-#
-# def multivariate_lstsquares_torch(theta, tList, dimensional=False):
-#     """
-#
-#     Parameters
-#     ----------
-#     theta : tuple of array
-#         Tuple containing 3 arrays. First corresponds to vector of baseline intensities mu. Second is a square matrix
-#         corresponding to interaction matrix alpha. Last is vector of recovery rates beta.
-#
-#     tList : list of tuple
-#         List containing tuples (t, m) where t is the time of event and m is the mark (dimension). The marks must go from
-#         1 to nb_of_dimensions.
-#         Important to note that this algorithm expects the first and last time to mark the beginning and
-#         the horizon of the observed process. As such, first and last marks must be equal to 0, signifying that they are
-#         not real event times.
-#         The algorithm checks by itself if this condition is respected, otherwise it sets the beginning at 0 and the end
-#         equal to the last time event.
-#     dimensional : bool
-#         Whether to return the sum of loglikelihood or decomposed in each dimension. Default is False.
-# Returns
-#     -------
-#     likelihood : array of float
-#         Value of likelihood at each process.
-#         The value returned is the opposite of the mathematical likelihood in order to use minimization packages.
-#     """
-#
-#     mu, alpha, beta = theta
-#
-#     mu_alt = torch.exp(mu)
-#     beta_alt = torch.exp(beta) #+ 1e-16
-#     beta_sum = beta_alt + beta_alt.T
-#
-#     timestamps = tList.copy()
-#
-#     # We first check if we have the correct beginning and ending.
-#     if timestamps[0][1] > 0:
-#         timestamps = [(0, 0)] + timestamps
-#     if timestamps[-1][1] > 0:
-#         timestamps += [(timestamps[-1][0], 0)]
-#
-#     # Initialise values
-#     tb, mb = timestamps[1]
-#     # Compensator between beginning and first event time
-#     compensator_sq = (tb - timestamps[0][0]) * torch.sum(mu_alt ** 2)
-#     # Intensity before first jump
-#     lambda_i = torch.zeros(alpha.shape[0], 1)
-#     lambda_i[mb - 1] = lambda_i[mb - 1] + mu_alt[mb - 1]
-#     ic = mu_alt + alpha[:, [mb - 1]]
-#     # j=1
-#
-#     for tc, mc in timestamps[2:]:
-#
-#         # First we estimate the compensator
-#         inside_log = (mu_alt - torch.minimum(ic, torch.tensor(0)))/mu_alt
-#         # Restart time
-#         t_star = tb + torch.log(inside_log)/beta_alt
-#         t_star_ij = torch.maximum(t_star, t_star.T)
-#
-#         first_term = (mu*mu.T)*(tc - t_star_ij)
-#         middle_term = (mu*((ic - mu)/beta_alt).T)*(torch.exp(-beta_alt*(t_star_ij - tb)) - torch.exp(-beta_alt*(tc - tb))).T
-#         # if j == 1:
-#         #     print(middle_term)
-#         #     j += 1
-#         middle_term = middle_term + middle_term.T
-#         last_term = (((ic - mu)*(ic - mu).T)/beta_sum)*(torch.exp(-beta_sum*(t_star_ij - tb)) - torch.exp(-beta_sum*(tc - tb)))
-#
-#         aux = (t_star_ij < tc) * (first_term + middle_term + last_term)
-#         if torch.sum(aux) < 0:
-#             print("oh oh")
-#         compensator_sq = compensator_sq + torch.sum(aux)
-#
-#         if mc > 0:
-#             ic = mu_alt + (ic - mu_alt) * torch.exp(-beta_alt * (tc - tb))
-#             if (torch.maximum(ic[mc - 1], torch.tensor(0)) < 0).any():
-#                 print("oh oh 2")
-#             lambda_i[mc - 1] = lambda_i[mc - 1] + torch.maximum(ic[mc - 1], torch.tensor(0))
-#             # j += 1
-#             # print(j, ic, 1+0.45*(1-0.5**(j-1)))
-#             ic = ic + alpha[:, [mc - 1]]
-#
-#         tb = tc
-#
-#     least_squares_error = compensator_sq - (2 / timestamps[-1][0]) * torch.sum(lambda_i)
-#
-#     return least_squares_error
+def multivariate_loglikelihood_approximated(theta, tList, dim=None, dimensional=False):
+    """
 
+    Parameters
+    ----------
+    theta : tuple of array
+        Tuple containing 3 arrays. First corresponds to vector of baseline intensities mu. Second is a square matrix
+        corresponding to interaction matrix alpha. Last is vector of recovery rates beta.
 
-# def multivariate_loglikelihood_tf(theta, tList, dimensional=False):
-#     """
-#
-#     Parameters
-#     ----------
-#     theta : tuple of array
-#         Tuple containing 3 arrays. First corresponds to vector of baseline intensities mu. Second is a square matrix
-#         corresponding to interaction matrix alpha. Last is vector of recovery rates beta.
-#
-#     tList : list of tuple
-#         List containing tuples (t, m) where t is the time of event and m is the mark (dimension). The marks must go from
-#         1 to nb_of_dimensions.
-#         Important to note that this algorithm expects the first and last time to mark the beginning and
-#         the horizon of the observed process. As such, first and last marks must be equal to 0, signifying that they are
-#         not real event times.
-#         The algorithm checks by itself if this condition is respected, otherwise it sets the beginning at 0 and the end
-#         equal to the last time event.
-#     dimensional : bool
-#         Whether to return the sum of loglikelihood or decomposed in each dimension. Default is False.
-# Returns
-#     -------
-#     likelihood : array of float
-#         Value of likelihood at each process.
-#         The value returned is the opposite of the mathematical likelihood in order to use minimization packages.
-#     """
-#
-#     mu, alpha, beta = theta
-#     dim = mu.shape[0]
-#
-#     timestamps = tList.copy()
-#
-#     # We first check if we have the correct beginning and ending.
-#     if timestamps[0][1] > 0:
-#         timestamps = [(0, 0)] + timestamps
-#     if timestamps[-1][1] > 0:
-#         timestamps += [(timestamps[-1][0], 0)]
-#
-#     # Initialise values
-#     tb, mb = timestamps[1]
-#     # Compensator between beginning and first event time
-#     compensator = mu*(tb - timestamps[0][0])
-#     # Intensity before first jump
-#     log_i = tf.zeros(alpha.shape[0], 1)
-#     log_i = log_i*np.array([[i==(mb-1)] for i in range(dim)]) + tf.math.log(mu[mb-1])
-#
-#     ic = mu + tf.reshape(alpha[:, (mb - 1)], (dim, 1))
-#     # j=1
-#
-#     for tc, mc in timestamps[2:]:
-#         # First we estimate the compensator
-#         inside_log = (mu - tf.math.minimum(ic, 0))/mu
-#         # Restart time
-#         # t_star = tb + torch.log(inside_log)/beta
-#         aux = inside_log*np.array(inside_log != 0) + tf.ones((dim,1))*np.array(inside_log == 0) #This is wrong look up
-#
-#         print(((tb + tf.math.log(inside_log)/beta) < tc)*(mu*(tc-tb - tf.math.log(inside_log)/beta)))
-#         compensator += ((tb + tf.math.log(inside_log)/beta) < tc)*(mu*(tc-tb - tf.math.log(inside_log)/beta)) + ((ic-mu)/beta)*(aux - tf.math.exp(-beta*(tc-tb)))
-#
-#         # Then, estimation of intensity before next jump.
-#         if mc > 0:
-#             ic = mu + (ic - mu)*tf.math.exp(-beta*(tc-tb))
-#
-#             if ic[mc - 1] <= 0.0:
-#                 # print("oh no", ic,mc, tc)
-#                 # res = 1e8
-#
-#                 # rayon_spec = np.max(np.abs(np.linalg.eig(np.abs(alpha) / beta)[0]))
-#                 # rayon_spec = min(rayon_spec, 0.999)
-#                 # if 2*(tList[-1][0])/(1-rayon_spec) < 0:
-#                 #     print("wut")
-#                 # res = 2*(tList[-1][0])/(1-rayon_spec)
-#
-#                 res = 1e8+(tf.reduce_sum((mu+100)**2) + tf.reduce_sum((alpha+1)**2) + tf.reduce_sum((beta+1)**2))
-#                 return res
-#             else:
-#                 log_i = log_i**np.array([[i==(mc-1)] for i in range(dim)]) + tf.math.log(ic[mc - 1])
-#             # j += 1
-#             # print(j, ic, 1+0.45*(1-0.5**(j-1)))
-#             ic = ic + alpha[tf.newaxis, [mc - 1]]
-#
-#         tb = tc
-#     likelihood = log_i - compensator
-#     if not(dimensional):
-#         likelihood = tf.reduce_sum(likelihood)
-#     return -likelihood
+    tList : list of tuple
+        List containing tuples (t, m) where t is the time of event and m is the mark (dimension). The marks must go from
+        1 to nb_of_dimensions.
+        Important to note that this algorithm expects the first and last time to mark the beginning and
+        the horizon of the observed process. As such, first and last marks must be equal to 0, signifying that they are
+        not real event times.
+        The algorithm checks by itself if this condition is respected, otherwise it sets the beginning at 0 and the end
+        equal to the last time event.
+    dim : int
+        Number of processes only necessary if providing 1-dimensional theta. Default is None
+    dimensional : bool
+        Whether to return the sum of loglikelihood or decomposed in each dimension. Default is False.
+Returns
+    -------
+    likelihood : array of float
+        Value of likelihood at each process.
+        The value returned is the opposite of the mathematical likelihood in order to use minimization packages.
+    """
+
+    if isinstance(theta, np.ndarray):
+        if dim is None:
+            raise ValueError("Must provide dimension to unpack correctly")
+        else:
+            mu = np.array(theta[:dim]).reshape((dim, 1))
+            alpha = np.array(theta[dim:dim * (dim + 1)]).reshape((dim, dim))
+            beta = np.array(theta[dim * (dim + 1):]).reshape((dim, 1))
+    else:
+        mu, alpha, beta = (i.copy() for i in theta)
+    beta = beta + 1e-10
+
+    beta_1 = 1/beta
+
+    timestamps = tList.copy()
+
+    # We first check if we have the correct beginning and ending.
+    if timestamps[0][1] > 0:
+        timestamps = [(0, 0)] + timestamps
+    if timestamps[-1][1] > 0:
+        timestamps += [(timestamps[-1][0], 0)]
+
+    # Initialise values
+    tb, mb = timestamps[1]
+    # Compensator between beginning and first event time
+    compensator = mu*(timestamps[-1][0] - timestamps[0][0])
+    # Intensity before first jump
+    log_i = np.zeros((alpha.shape[0],1))
+    log_i[mb-1] = np.log(mu[mb-1])
+    ic = mu + alpha[:, [mb - 1]]
+    # j=1
+
+    for tc, mc in timestamps[2:]:
+
+        compensator += np.multiply(beta_1, ic-mu)*(1 - np.exp(-beta*(tc-tb)))
+
+        # Then, estimation of intensity before next jump.
+        if mc > 0:
+            ic = mu + np.multiply((ic - mu), np.exp(-beta*(tc-tb)))
+
+            if ic[mc - 1] <= 0.0:
+                # print("oh no")
+                # res = 1e8
+
+                # rayon_spec = np.max(np.abs(np.linalg.eig(np.abs(alpha) / beta)[0]))
+                # rayon_spec = min(rayon_spec, 0.999)
+                # if 2*(tList[-1][0])/(1-rayon_spec) < 0:
+                #     print("wut")
+                # res = 2*(tList[-1][0])/(1-rayon_spec)
+
+                res = 1e8 #*(np.sum(mu**2) + np.sum(alpha**2) + np.sum(beta**2))
+                return res
+            else:
+                log_i[mc-1] += np.log(ic[mc - 1])
+            # j += 1
+            # print(j, ic, 1+0.45*(1-0.5**(j-1)))
+            ic += alpha[:, [mc - 1]]
+
+        tb = tc
+    likelihood = log_i - compensator
+    if not(dimensional):
+        likelihood = np.sum(likelihood)
+    return -likelihood

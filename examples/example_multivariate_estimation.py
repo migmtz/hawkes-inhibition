@@ -19,7 +19,7 @@ if __name__ == "__main__":
     mu = np.random.uniform(0,2, (10,1))
     alpha = np.random.normal(0,1,(10,10))
     beta = np.random.uniform(10,20, (10,1))
-    max_jumps = 1000
+    max_jumps = 500
 
     hawkes = multivariate_exponential_hawkes(mu=mu, alpha=alpha, beta=beta, max_jumps=max_jumps)
 
@@ -53,12 +53,12 @@ if __name__ == "__main__":
     # # With 'likelihood' goodness of fit, you must provide a constant decay for all kernels
     # learnersq = HawkesExpKern(decays=beta_his, solver='bfgs')
     # print("His real likelihood", learnersq.score(list_tick, hawkes.timestamps[-1][0], baseline=mu.squeeze(), adjacency=alpha/beta_his))
-    # # learnerlog = HawkesExpKern(decays=np.mean(beta),gofit="likelihood")
+    learnerlog = HawkesExpKern(decays=np.mean(beta),gofit="likelihood")
     #
-    # # learnerlog.fit(list_tick)
+    learnerlog.fit(list_tick)
     # learnersq.fit(list_tick)
     #
-    # # print("log_tick", learnerlog.adjacency*np.c_[beta,beta])
+    print("log_tick", learnerlog.adjacency*np.c_[beta,beta])
     # print("log_sq", learnersq.baseline, "\n", learnersq.adjacency*np.c_[beta,beta])
     #
     # # print("attributes", learnersq.__dict__)
