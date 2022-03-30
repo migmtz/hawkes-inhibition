@@ -68,8 +68,8 @@ if __name__ == "__main__":
                 # print(ref)
                 if plot_names[ref][0:4] == "tick":
                     if plot_names[ref][5:9] == "beta":
-                        print(estimation[dim + dim * i + j + dim*dim*0], estimation[dim + dim * i + j + dim*dim*1])
-                        ax[i, j].plot(x, np.sum([estimation[dim + dim * i + j + dim*dim*u] * np.exp(-theta[dim + dim * dim + u] * x) for u in range(dim)], axis=0),
+                        print(dim + dim * dim * i + dim * j + 0, dim + dim * dim * i + dim * j + 1)
+                        ax[i, j].plot(x, np.sum([estimation[dim + dim * dim * i + dim * j + u] * np.exp(-theta[dim + dim * dim + u] * x) for u in range(dim)], axis=0),
                                       c=colors[dict_names[plot_names[ref]]],
                                       label=labels[ref], linestyle=styles[dict_names[plot_names[ref]]], alpha=0.5)
                     else:

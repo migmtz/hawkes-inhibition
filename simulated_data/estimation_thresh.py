@@ -120,13 +120,13 @@ class multivariate_estimator_bfgs_non_penalized(object):
 
 if __name__ == "__main__":
     np.random.seed(0)
-    number = 2
+    number = 8
     theta = param_dict[number]
     dim = int(np.sqrt(1 + theta.shape[0]) - 1)
 
-    file_name = ""
+    file_name = "grad"
 
-    threshold = 0.40
+    threshold = 0.1
 
     with open("estimation_"+str(number)+'_file/_estimation'+str(number)+file_name, 'r') as read_obj:
         csv_reader = csv.reader(read_obj)

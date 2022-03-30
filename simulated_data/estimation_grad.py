@@ -8,7 +8,7 @@ from dictionary_parameters import dictionary as param_dict
 if __name__ == "__main__":
     np.random.seed(0)
 
-    number = 6
+    number = 8
     print("Estimation number ", str(number))
     theta = param_dict[number]
     print(theta)
@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     first = 1
     before = 1
-    until = 5
+    until = 25
 
     with open("estimation_"+str(number)+'_file/_simulation'+str(number), 'r') as read_obj:
         csv_reader = csv.reader(read_obj)

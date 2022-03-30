@@ -6,13 +6,13 @@ from dictionary_parameters import dictionary as param_dict
 from matplotlib import pyplot as plt
 
 if __name__ == "__main__":
-    number = 7
+    number = 8
     theta = param_dict[number]
     dim = int(np.sqrt(1 + theta.shape[0]) - 1)
     mu = param_dict[number][:dim].reshape(dim, 1)
     alpha = param_dict[number][dim:-dim].reshape((dim, dim))
     beta = param_dict[number][-dim:].reshape(dim, 1)
-    number_repetitions = 5
+    number_repetitions = 25
     with open("estimation_"+str(number)+'_file/_simulation'+str(number), 'w', newline='') as myfile:
         max_jumps = 5000
 

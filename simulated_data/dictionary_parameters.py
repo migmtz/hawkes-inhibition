@@ -67,6 +67,9 @@ dictionary[7] = np.concatenate((np.array([1.0, 1.3, 1.2, 0.8, 0.5, 0.3, 1.1, 1.0
 
                                 np.array([6.0, 3.0, 2.2, 3.6, 6.0, 1.4, 2.4, 2.0, 1.6, 2.4])))
 
+dictionary[8] = np.array([1.2, 1.0, 0.0, -0.5, -0.7, -0.8, 1.0, 1.2])
+
+
 if __name__ == "__main__":
     a = dictionary[7].reshape(12,10)
     alpha = a[1:-1, :]
