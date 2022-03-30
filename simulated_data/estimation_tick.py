@@ -10,13 +10,13 @@ from metrics import relative_squared_loss
 # 3rd and 4th contain dim + dim**3
 
 if __name__ == "__main__":
-    number = 3
+    number = 7
     theta = param_dict[number]
     dim = int(np.sqrt(1 + theta.shape[0]) - 1)
-    beta = theta[-dim:].reshape((dim,1))# + 1e-16
+    beta = theta[-dim:].reshape((dim,1)) + 1e-16
 
     until = 5
-    C_grid = [0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000, 100000, 1000000]
+    C_grid = [1, 10, 100, 1000, 10000, 100000, 1000000]
     C_def, error = np.zeros((until, 4)), np.array([[np.inf for i in range(4)] for j in range(until)])
     for C in C_grid:
         with open("estimation_" + str(number) + '_file/_simulation' + str(number), 'r') as read_obj:

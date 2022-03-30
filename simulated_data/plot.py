@@ -22,25 +22,27 @@ def obtain_average_estimation(file_name, number, dim, number_estimations):
         for row in csv_reader:
             if n < number_estimations:
                 result += np.array([float(i) for i in row])
+                if file_name[5:9] == "beta":
+                    print(result)
                 n += 1
     result /= n
 
     return result
 
 
-dict_names = {"":0, "threshgrad10.0":1, "tick":2, "tick_bfgs":3, "tick_beta":4, "tick_beta_bfgs":5, "approx":2}
+dict_names = {"":0, "threshgrad5.0":1, "tick":2, "tick_bfgs":3, "tick_beta":4, "tick_beta_bfgs":5, "approx":2}
 styles = ["solid", "dashdot", "dashed", "dashed", "dotted", "dotted"]
 colors = ["orange", "orange", "g", "b", "g", "b"]
 
 
 if __name__ == "__main__":
-    number = 2
+    number = 1
     theta = param_dict[number]
     dim = int(np.sqrt(1 + theta.shape[0]) - 1)
     number_estimations = 25
 
-    plot_names = ["", "threshgrad10.0", "approx", "tick_bfgs", "tick_beta", "tick_beta_bfgs"]
-    labels = ["MLE", "MLE-$\\varepsilon$", "Approx", "BFGS", "grid-SGD", "grid-BFGS"]
+    plot_names = ["", "threshgrad5.0", "approx", "tick_bfgs", "tick_beta_bfgs"]
+    labels = ["MLE", "MLE-0.05", "Approx", "Lst-sq", "Grid-lst-sq"]
     estimations = []
 
     for file_name in plot_names:
@@ -66,6 +68,7 @@ if __name__ == "__main__":
                 # print(ref)
                 if plot_names[ref][0:4] == "tick":
                     if plot_names[ref][5:9] == "beta":
+                        print(estimation[dim + dim * i + j + dim*dim*0], estimation[dim + dim * i + j + dim*dim*1])
                         ax[i, j].plot(x, np.sum([estimation[dim + dim * i + j + dim*dim*u] * np.exp(-theta[dim + dim * dim + u] * x) for u in range(dim)], axis=0),
                                       c=colors[dict_names[plot_names[ref]]],
                                       label=labels[ref], linestyle=styles[dict_names[plot_names[ref]]], alpha=0.5)

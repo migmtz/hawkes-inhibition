@@ -36,12 +36,14 @@ if __name__ == "__main__":
     number_grid = [0,1,2]
     number_estimations = 25
 
-    plot_names = ["", "threshgrad", "tick", "tick_bfgs"]#, "tick_beta", "tick_beta_bfgs"]
+    plot_names = ["", "threshgrad", "approx", "tick_bfgs"]#, "tick_beta", "tick_beta_bfgs"]
     numbers_thresh = [10.0, 5.0, 20.0]
-    labels = ["MLE", "MLE-$\\varepsilon$", "SGD", "BFGS"]
+    labels = [["MLE", "MLE-0.10", "Approx", "Lst-sq"]]
+    labels += [["MLE", "MLE-0.05", "Approx", "Lst-sq"]]
+    labels += [["MLE", "MLE-0.20", "Approx", "Lst-sq"]]
 
     sns.set_theme()
-    fig, ax = plt.subplots(3, 3, sharey="col")
+    fig, ax = plt.subplots(3, 3)#, sharey="col")
 
     for count, number in enumerate(number_grid):
         theta = param_dict[number]
@@ -56,11 +58,11 @@ if __name__ == "__main__":
 
         for ref, i in enumerate(errors):
             if ref == 2:
-                boxplot = ax[count, ref].boxplot(i[:, 0:2], patch_artist=True)
-                ax[count, ref].set_xticklabels(labels[0:2])
+                boxplot = ax[count, ref].boxplot(i[:, 0:3], patch_artist=True)
+                ax[count, ref].set_xticklabels(labels[count][0:3])
             else:
                 boxplot = ax[count, ref].boxplot(i, patch_artist=True)
-                ax[count, ref].set_xticklabels(labels)
+                ax[count, ref].set_xticklabels(labels[count])
             if count == 0:
                 ax[count, ref].title.set_text(text[ref])
             for j, patch in enumerate(boxplot['boxes']):
@@ -71,9 +73,9 @@ if __name__ == "__main__":
                     alpha = 1.0
                     hatch = ""
                 patch.set(alpha=alpha, hatch=hatch, facecolor=colors[j])
-        ax[count, 0].set_ylabel("Scenario: ("+str(count+1)+")")
+        ax[count, 0].set_ylabel("Scenario ("+str(count+1)+")")
 
-        legend_elements = [Patch(facecolor=colors[i], edgecolor='k', hatch=hatches[i], label=labels[i]) for i in range(4)]
+        #legend_elements = [Patch(facecolor=colors[i], edgecolor='k', hatch=hatches[i], label=labels[i]) for i in range(4)]
 
     # ax[0, 0].legend(handles=legend_elements, loc='best')
     plt.show()

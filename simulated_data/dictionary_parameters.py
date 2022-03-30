@@ -73,4 +73,5 @@ if __name__ == "__main__":
     beta = a[-1, :].reshape(10,1)
     print(alpha, beta, np.maximum(alpha/beta, 0))
     print(np.sum(np.maximum(alpha/beta, 0), axis=1))
+    print("eig", np.linalg.eigvals(alpha), np.linalg.eigvals(alpha.T))
     print(" \\\\\n".join([" & ".join(map(str, line)) for line in a]))

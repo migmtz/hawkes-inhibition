@@ -31,7 +31,7 @@ def obtain_average_estimation(file_name, number, dim, number_estimations):
 
 if __name__ == "__main__":
 
-    number = 2
+    number = 7
     print("Estimation number ", str(number))
     theta = param_dict[number]
     print(theta)
@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
     # plot_names = ["", "threshgrad20.0", "tick", "tick_bfgs"]
 
-    plot_names = ["", "threshgrad10.0", "approx", "tick_bfgs"]  # , "tick_beta", "tick_beta_bfgs"]
+    plot_names = ["grad", "threshgrad20.0", "approx", "tick_bfgs"]  # , "tick_beta", "tick_beta_bfgs"]
     estimations = [obtain_average_estimation(file_name, number, dim, number_estimations) for file_name in plot_names]
 
     #print(estimations)

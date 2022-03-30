@@ -39,7 +39,7 @@ def time_change(theta, tList):
         t_star = tb + np.multiply(beta_1, np.log(inside_log))
 
         aux = 1/inside_log  # inside_log can't be equal to zero (coordinate-wise)
-        aux = np.minimum(1, aux)
+        #aux = np.minimum(1, aux)
         compensator = (t_star < tc)*(np.multiply(mu, tc-t_star) + np.multiply(beta_1, ic-mu)*(aux - np.exp(-beta*(tc-tb))))
 
         transformed_times += [np.sum(compensator)]

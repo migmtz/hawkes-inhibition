@@ -39,8 +39,8 @@ if __name__ == "__main__":
     number_estimations = 3
     annot = False
 
-    plot_names = ["", "thresh10.0", "approx", "tick_bfgs"]
-    labels = ["MLE", "MLE-$\\varepsilon$", "Approx", "BFGS"]
+    plot_names = ["grad", "threshgrad20.0", "approx", "tick_bfgs"]
+    labels = ["MLE", "MLE-$0.20$", "Approx", "Lst-sq"]
     estimations = [obtain_average_estimation(file_name, number, dim, number_estimations) for file_name in plot_names]
 
     sns.set_theme()
