@@ -67,7 +67,7 @@ def obtain_average_estimation(file_name, numbers):
 
 if __name__ == "__main__":
     np.random.seed(1)
-    plot_names = ["grad", "threshgrad20.0", "threshgrad40.0", "threshgrad50.0", "threshgrad60.0", "threshgrad75.0", "threshgrad90.0", "threshgrad95.0", "diag"]
+    plot_names = ["grad", "threshgrad20.0", "threshgrad40.0", "threshgrad50.0", "threshgrad60.0", "threshgrad75.0", "threshgrad90.0", "threshgrad95.0", "threshgradrevisited90.0", "diag"]
     labels = ["MLE", "MLE-0.20", "MLE-0.40", "MLE-0.50", "MLE-0.60", "MLE-0.75", "MLE-0.90", "MLE-0.95", "Diag"]
 
     estimations = []
@@ -117,7 +117,6 @@ if __name__ == "__main__":
             if 0.0 in test_transformed:
                 p_values[250] += 0
             else:
-                print("not oupsi bitch")
                 p_values[250] += kstest(test_transformed, cdf="expon", mode="exact").pvalue
 
             for ref_dim, i in enumerate(transformed_dimensional):
@@ -130,6 +129,7 @@ if __name__ == "__main__":
         p_values = p_values[mask != 0]
 
         p_values = np.round(p_values, 5)
+        print(file_name+" average: ", np.mean(p_values))
 
         a = p_values.reshape((1, len(p_values)))
         print(" \\\\\n".join([" & ".join(map(str, line)) for line in a]))

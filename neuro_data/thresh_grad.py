@@ -181,7 +181,8 @@ class multivariate_estimator_bfgs_non_penalized2(object):
         print("loss", self.loss)
         print("first")
         self.res = initial
-        self.initial_guess = self.res
+        self.initial_guess = np.concatenate(
+                (np.concatenate((np.ones(self.dim), np.zeros(self.dim * self.dim))), np.ones(self.dim)))
 
         alpha = np.abs(self.res[self.dim:-self.dim])
         ordered_alpha = np.sort(alpha)
@@ -222,12 +223,12 @@ if __name__ == "__main__":
         dim = len(filtre_dict_orig)
         a_file.close()
 
-        threshold = 0.9
+        threshold = 0.98
 
         file_name = "grad"
         initial = obtain_average_estimation(file_name, number, dim, 1)
 
-        with open("estimation/_traitements2_" + str(number) + 'threshgradrevisited'+str(round(threshold*100, 1)), 'w', newline='') as myfile:
+        with open("estimation/_traitements2_" + str(number) + 'threshgrad'+str(round(threshold*100, 1)), 'w', newline='') as myfile:
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
 
             loglikelihood_estimation = multivariate_estimator_bfgs_non_penalized2(dimension=dim, options={"disp": False})
