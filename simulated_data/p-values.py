@@ -36,7 +36,7 @@ if __name__ == "__main__":
     theta = param_dict[number]
     print(theta)
     dim = int(np.sqrt(1 + theta.shape[0]) - 1)
-    number_estimations = 25
+    number_estimations = 5
     max_jumps = 5000
 
     mu = np.array(theta[:dim]).reshape((dim, 1))
@@ -45,12 +45,12 @@ if __name__ == "__main__":
 
     # plot_names = ["", "threshgrad20.0", "tick", "tick_bfgs"]
 
-    plot_names = ["grad", "threshgrad20.0", "approx", "tick_bfgs"]  # , "tick_beta", "tick_beta_bfgs"]
+    plot_names = ["grad", "threshgrad10.0", "threshgrad20.0", "approx", "tick_bfgs"]
     estimations = [obtain_average_estimation(file_name, number, dim, number_estimations) for file_name in plot_names]
 
     #print(estimations)
     p_values = np.zeros((len(plot_names)+1, dim+1)) # As in the table
-    number_simulations = 5
+    number_simulations = number_estimations
     for i in range(number_simulations):
         np.random.seed(1000+i)
         hawkes = multivariate_exponential_hawkes(mu=mu, alpha=alpha, beta=beta, max_jumps=max_jumps)
@@ -77,6 +77,7 @@ if __name__ == "__main__":
 
     p_values /= number_simulations
     p_values = np.round(p_values, 3)
+    print(np.mean(np.array(p_values), axis=1))
     print("Real values p-value: ", p_values[0])
     for ref, file_name in enumerate(plot_names):
         print(file_name + " estimated values p-value: ", p_values[ref+1])

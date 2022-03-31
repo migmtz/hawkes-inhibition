@@ -45,6 +45,7 @@ if __name__ == "__main__":
 
     sns.set_theme()
     fig_or, ax_or = plt.subplots()
+    plt.tight_layout()
     fig, axr = plt.subplots(2, len(plot_names))
     ax = axr.T
     hex_list = ['#FF3333', '#FFFFFF', '#33FF49']
@@ -59,7 +60,7 @@ if __name__ == "__main__":
     print(sign)
     # mask = heat_matrix == 0
 
-    sns.heatmap(heat_matrix, ax=ax_or, cmap=blah, center=0, annot=annot, linewidths=.5)#, mask=mask)
+    sns.heatmap(heat_matrix, ax=ax_or, cmap=blah, center=0, annot=annot, square=True, linewidths=.5, xticklabels=range(1,dim+1), yticklabels=range(1,dim+1))#, mask=mask)
     # wrong_heatmap = np.sign(heat_matrix)-np.sign(-heat_estimated)*(heat_matrix != 0.0)
     # sns.heatmap(wrong_heatmap, ax=ax[2], cmap=get_continuous_cmap(hex_list), center=0, annot=True)
 
@@ -86,7 +87,8 @@ if __name__ == "__main__":
         heat_estimated = alpha_est / beta_est
         # heat_estimated[np.abs(heat_estimated) <= 0.01] = 0
 
-        sns.heatmap(heat_estimated, ax=ax[ref][0], cmap=get_continuous_cmap(hex_list), center=0, annot=annot, linewidths=.5)
+        g = sns.heatmap(heat_estimated, ax=ax[ref][0], cmap=get_continuous_cmap(hex_list), center=0, annot=annot, linewidths=.5, xticklabels=range(1,dim+1), yticklabels=range(1,dim+1))
+        g.set_xticklabels(g.get_xticklabels(), rotation=0)
         ax[ref][0].set_title(labels[ref])
 
         # aux = sign * np.abs(np.abs(np.sign(heat_matrix)) - np.abs(np.sign(heat_estimated)))
@@ -100,6 +102,10 @@ if __name__ == "__main__":
         aux[np.abs(np.sign(heat_estimated) - np.sign(heat_matrix)) == 2] = -2
         aux[(heat_estimated != 0.0) * (heat_matrix == 0.0)] = 1
         aux[(heat_estimated == 0.0) * (heat_matrix != 0.0)] = -1
-        sns.heatmap(aux, ax=ax[ref][1], cmap=get_continuous_cmap(['#000000', '#9B59B6', '#FFFFFF', '#E67E22']), annot=annot, linewidths=.5, vmin=-2, vmax=1)
+        g = sns.heatmap(aux, ax=ax[ref][1], cmap=get_continuous_cmap(['#000000', '#9B59B6', '#FFFFFF', '#E67E22']), annot=annot, linewidths=.5, vmin=-2, vmax=1, xticklabels=range(1,dim+1), yticklabels=range(1,dim+1))
+        g.set_xticklabels(g.get_xticklabels(), rotation=0)
         # ax[ref][1].set_title(str(np.round(false_0, 2)) + " " + str(np.round(false_non_0, 2)))
+
+    #plt.tight_layout()
+
     plt.show()

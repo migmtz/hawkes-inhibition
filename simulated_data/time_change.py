@@ -53,6 +53,7 @@ def time_change(theta, tList):
             ic += alpha[:, [mc - 1]]
 
         tb = tc
+    #print("transformed_times", individual_transformed_times[1][0:10])
     return transformed_times, individual_transformed_times
 
 
