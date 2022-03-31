@@ -15,7 +15,7 @@ if __name__ == "__main__":
     dim = int(np.sqrt(1 + theta.shape[0]) - 1)
     beta = theta[-dim:].reshape((dim,1)) + 1e-16
 
-    until = 5
+    until = 25
     C_grid = [1, 10, 100, 1000, 10000, 100000, 1000000]
     C_def, error = np.zeros((until, 4)), np.array([[np.inf for i in range(4)] for j in range(until)])
     for C in C_grid:

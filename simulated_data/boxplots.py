@@ -33,11 +33,11 @@ hatches = ["", "///", "", ""]
 
 if __name__ == "__main__":
     dim = 2
-    number_grid = [0,1,2]
+    number_grid = [0,1,8]
     number_estimations = 25
 
     plot_names = ["", "threshgrad", "approx", "tick_bfgs"]#, "tick_beta", "tick_beta_bfgs"]
-    numbers_thresh = [10.0, 5.0, 20.0]
+    numbers_thresh = [10.0, 5.0, 10.0]
     labels = [["MLE", "MLE-0.10", "Approx", "Lst-sq"]]
     labels += [["MLE", "MLE-0.05", "Approx", "Lst-sq"]]
     labels += [["MLE", "MLE-0.20", "Approx", "Lst-sq"]]
