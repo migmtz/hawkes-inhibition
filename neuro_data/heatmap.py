@@ -29,7 +29,7 @@ def obtain_average_estimation(file_name, number, dim, number_estimations):
 
 
 if __name__ == "__main__":
-    for number in range(4,5):
+    for number in range(1,11):
 
         a_file = open("traitements2/train" + str(number) + ".pkl", "rb")
         tList, filtre_dict_orig, orig_dict_filtre = pickle.load(a_file)
@@ -95,6 +95,7 @@ if __name__ == "__main__":
             # aux[(heat_estimated == 0.0) * (heat_matrix != 0.0)] = -1
             # sns.heatmap(aux, ax=ax[ref][1], cmap=get_continuous_cmap(['#000000', '#9B59B6', '#FFFFFF', '#E67E22']), annot=annot, linewidths=.5, vmin=-2, vmax=1)
             # ax[ref][1].set_title(str(np.round(false_0, 2)) + " " + str(np.round(false_non_0, 2)))
-    fig2, ax2 = plt.subplots()
-    sns.heatmap(beta_est.reshape(len(filtre_dict_orig),1), ax=ax2)
+    #fig2, ax2 = plt.subplots()
+    #sns.heatmap(beta_est.reshape(len(filtre_dict_orig),1), ax=ax2)
+    plt.tight_layout()
     plt.show()

@@ -37,10 +37,10 @@ if __name__ == "__main__":
     number_estimations = 25
 
     plot_names = ["", "threshgrad", "approx", "tick_bfgs"]#, "tick_beta", "tick_beta_bfgs"]
-    numbers_thresh = [10.0, 5.0, 10.0]
+    numbers_thresh = [10.0, 5.0, 5.0]
     labels = [["MLE", "MLE-0.10", "Approx", "Lst-sq"]]
     labels += [["MLE", "MLE-0.05", "Approx", "Lst-sq"]]
-    labels += [["MLE", "MLE-0.20", "Approx", "Lst-sq"]]
+    labels += [["MLE", "MLE-0.05", "Approx", "Lst-sq"]]
 
     sns.set_theme()
     fig, ax = plt.subplots(3, 3)#, sharey="col")
