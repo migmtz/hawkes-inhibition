@@ -41,6 +41,8 @@ if __name__ == "__main__":
     else:
         raise ValueError("Nein")
 
+    alpha = np.abs(alpha)
+
     hawkes = multivariate_exponential_hawkes(mu=mu, alpha=alpha, beta=beta, max_jumps=15*(dim-1))
 
     # Create a process with given parameters and maximal number of jumps.

@@ -39,8 +39,8 @@ if __name__ == "__main__":
     number_estimations = 3
     annot = False
 
-    plot_names = ["grad", "threshgrad25.0", "approx", "tick_bfgs"]
-    labels = ["MLE", "MLE-$0.25$", "Approx", "Lst-sq"]
+    plot_names = ["threshgrad25.0", "threshgrad30.0", "threshrapport15.0", "threshrapport35.0"]
+    labels = plot_names
     estimations = [obtain_average_estimation(file_name, number, dim, number_estimations) for file_name in plot_names]
 
     sns.set_theme()
@@ -84,7 +84,8 @@ if __name__ == "__main__":
             beta_est = estimation[-dim:]
             print("Error estimation"+plot_names[ref], relative_squared_loss(theta, estimation))
             print(alpha_est)
-        heat_estimated = alpha_est / beta_est
+        # heat_estimated = np.sign(alpha_est)*np.exp(np.abs(alpha_est) / beta_est)
+        heat_estimated = alpha_est/beta_est
         # heat_estimated[np.abs(heat_estimated) <= 0.01] = 0
 
         g = sns.heatmap(heat_estimated, ax=ax[ref][0], cmap=get_continuous_cmap(hex_list), center=0, annot=annot, linewidths=.5, xticklabels=range(1,dim+1), yticklabels=range(1,dim+1))
