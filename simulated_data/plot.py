@@ -75,6 +75,10 @@ if __name__ == "__main__":
                     else:
                         ax[i, j].plot(x, estimation[dim + dim * i + j] * np.exp(-theta[dim + dim * dim + i] * x), c=colors[dict_names[plot_names[ref]]],
                                   label=labels[ref], linestyle=styles[dict_names[plot_names[ref]]], alpha=0.5)
+                elif plot_names[ref][0:4] == "thre":
+                    ax[i, j].plot(x, estimation[dim + dim * i + j] * np.exp(-estimation[dim + dim * dim + i] * x),
+                        c=colors[dict_names[plot_names[ref]]], linestyle=styles[dict_names[plot_names[ref]]],
+                        label=labels[ref], alpha=0.5, marker="+", markevery=5)
                 else:
                     # print(dim + dim * i + j)
                     ax[i, j].plot(x, estimation[dim + dim * i + j] * np.exp(-estimation[dim + dim * dim + i] * x), c=colors[dict_names[plot_names[ref]]], linestyle=styles[dict_names[plot_names[ref]]],label=labels[ref], alpha=0.5)

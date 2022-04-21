@@ -69,7 +69,7 @@ dictionary[7] = np.concatenate((np.array([1.0, 1.3, 1.2, 0.8, 0.5, 0.3, 1.1, 1.0
 
 dictionary[8] = np.array([1.2, 1.0, 0.0, -0.5, -0.7, -0.8, 1.0, 1.2])
 
-dictionary[9] = np.array([1.2, 1.0, -1.0, 0.1, 0.0, -0.8, 1.0, 1.2])
+dictionary[9] = np.array([1.2, 1.0, -1.0, 0.1, 0.0, -0.8, 1.5, 2.0])
 
 
 if __name__ == "__main__":
