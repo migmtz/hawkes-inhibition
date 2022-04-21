@@ -78,6 +78,7 @@ if __name__ == "__main__":
     p_values /= number_simulations
     p_values = np.round(p_values, 3)
     print(np.mean(np.array(p_values), axis=1))
+    print(np.max(np.mean(np.array(p_values), axis=1)[2:-2]))
     print("Real values p-value: ", p_values[0])
     for ref, file_name in enumerate(plot_names):
         print(file_name + " estimated values p-value: ", p_values[ref+1])

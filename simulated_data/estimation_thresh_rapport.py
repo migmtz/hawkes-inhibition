@@ -89,10 +89,16 @@ class multivariate_estimator_bfgs_non_penalized(object):
         self.options['iprint'] = 0
         print("loss", self.loss)
         print("first")
-
         self.initial_guess = initial
 
-        alpha = np.abs(self.initial_guess[self.dim:-self.dim])
+        alpha = np.abs(self.initial_guess[self.dim:-self.dim]).reshape((self.dim, self.dim))
+        beta = np.abs(self.initial_guess[-self.dim:]).reshape((self.dim, 1))
+
+        print(alpha[0,0], beta[0,0])
+        alpha = alpha/beta
+        alpha = np.ravel(alpha)
+        print(alpha[0])
+
         ordered_alpha = np.sort(alpha)
         norm = np.sum(ordered_alpha)
         aux, i = 0, 0
@@ -101,6 +107,8 @@ class multivariate_estimator_bfgs_non_penalized(object):
             i += 1
         i -= 1
         thresh = ordered_alpha[i]  # We erase those STRICTLY lower
+        self.initial_guess = np.concatenate(
+                (np.concatenate((np.ones(self.dim), np.zeros(self.dim * self.dim))), np.ones(self.dim)))
         self.bounds = [(1e-12, None) for i in range(self.dim)] + [(None, None) if i >= thresh else (0, 1e-16)
                                                                   for i in alpha] + [
                           (1e-12, None) for i in range(self.dim)]
@@ -133,16 +141,16 @@ if __name__ == "__main__":
         for z, row in enumerate(csv_reader):
             result = np.array([float(i) for i in row])
             print("z", z)
-            if z==0:
+            if z == 0:
                 with open("estimation_" + str(number) + '_file/_simulation' + str(number), 'r') as read_obj:
                     csv_reader = csv.reader(read_obj)
-                    with open("estimation_" + str(number) + '_file/_estimation' + str(number) + 'threshgrad'+str(threshold*100), 'w', newline='') as myfile:
+                    with open("estimation_" + str(number) + '_file/_estimation' + str(number) + 'threshrapport'+str(threshold*100), 'w', newline='') as myfile:
                         i = 1
                         wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-                        for row in csv_reader:
+                        for rows in csv_reader:
                             if i <= 1:
                                 print("# ", i)
-                                tList = [make_tuple(i) for i in row]
+                                tList = [make_tuple(i) for i in rows]
 
                                 loglikelihood_estimation_pen = multivariate_estimator_bfgs_non_penalized(dimension=dim,
                                                                                            options={"disp": False})
@@ -155,12 +163,12 @@ if __name__ == "__main__":
             else:
                 with open("estimation_"+str(number)+'_file/_simulation'+str(number), 'r') as read_obj:
                     csv_reader = csv.reader(read_obj)
-                    with open("estimation_"+str(number)+'_file/_estimation'+str(number)+'threshgrad'+str(threshold*100), 'a', newline='') as myfile:
-                        wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-                        for i, row in enumerate(csv_reader):
+                    for i, rows in enumerate(csv_reader):
+                        with open("estimation_"+str(number)+'_file/_estimation'+str(number)+'threshrapport'+str(threshold*100), 'a', newline='') as myfile:
+                            wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
                             if z == i:
-                                print("# ", i+1)
-                                tList = [make_tuple(i) for i in row]
+                                print("# ", z, i+1)
+                                tList = [make_tuple(i) for i in rows]
                                 # print(stop_criteria)
                                 loglikelihood_estimation_pen = multivariate_estimator_bfgs_non_penalized(dimension=dim,
                                                                                                          options={"disp": False})
