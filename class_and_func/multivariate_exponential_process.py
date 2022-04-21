@@ -216,7 +216,7 @@ class multivariate_exponential_hawkes(object):
                     jumps_plot[self.timestamps[i][1]-1] += [self.timestamps[i][0] for t in range(2)]
 
             for i in range(self.nb_processes):
-                ax1[i].plot(times, intensities[i], label="Underlying intensity", c="#1f77b4")
+                #ax1[i].plot(times, intensities[i], label="Underlying intensity", c="#1f77b4")
                 ax1[i].plot(times, np.maximum(intensities[i], 0), label="Conditional intensity", c='r')
                 # ax1[i].plot([i for i,j in self.timestamps[:-1]], self.intensity_jumps[i,:], c='k', alpha=0.5)
 

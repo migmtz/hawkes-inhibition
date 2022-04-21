@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     ax[0].annotate("$T_{(k)}$", xy=(times1[0], 0), xytext=(times1[0] - 0.18, -0.03),
                  annotation_clip=False)
-    ax[0].annotate("$T_k^{i\star}$", xy=(times1[0], 0), xytext=(times1[0] - 0.18, -0.065),
+    ax[0].annotate("$T_{(k)}^{i\star}$", xy=(times1[0], 0), xytext=(times1[0] - 0.18, -0.065),
                  annotation_clip=False)
 
 
@@ -59,7 +59,7 @@ if __name__ == "__main__":
     ax[1].scatter([aux], [0], marker="o", linewidths=1, c="brown", label="$T_{(k)} + \\beta_i^{-1}\log\left(\\frac{\mu^i - \lambda^{i\star}(T_{(k)})}{\mu^i}\\right)}$")
     ax[1].annotate("$T_{(k)}$", xy=(times1[0], 0), xytext=(times2[0] - 0.55, -0.03),
                    annotation_clip=False)
-    ax[1].annotate("$T_k^{i\star}$", xy=(times1[0], 0), xytext=(aux + 0.1, -0.03),
+    ax[1].annotate("$T_{(k)}^{i\star}$", xy=(times1[0], 0), xytext=(aux + 0.1, -0.03),
                    annotation_clip=False)
     ax[1].annotate("$T_{(k+1)}$", xy=(times1[0], 0), xytext=(times2[1] -0.18, -0.03),
                    annotation_clip=False)
@@ -90,7 +90,7 @@ if __name__ == "__main__":
     ax[2].scatter([aux], [0], marker="o", linewidths=1, c="brown")
     ax[2].annotate("$T_{(k)}$", xy=(times1[0], 0), xytext=(times2[0] - 0.55, -0.03),
                    annotation_clip=False)
-    ax[2].annotate("$T_k^{i\star}$", xy=(times1[0], 0), xytext=(times2[1] + 0.1, -0.03),
+    ax[2].annotate("$T_{(k)}^{i\star}$", xy=(times1[0], 0), xytext=(times2[1] + 0.1, -0.03),
                    annotation_clip=False)
     ax[2].annotate("$T_{(k+1)}$", xy=(times1[0], 0), xytext=(times2[1] + 0.1, -0.065),
                    annotation_clip=False)
