@@ -126,7 +126,7 @@ if __name__ == "__main__":
 
     file_name = "grad"
 
-    threshold = 0.25
+    threshold = 0.03
 
     with open("estimation_"+str(number)+'_file/_estimation'+str(number)+file_name, 'r') as read_obj:
         csv_reader = csv.reader(read_obj)

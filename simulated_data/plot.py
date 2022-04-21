@@ -30,19 +30,19 @@ def obtain_average_estimation(file_name, number, dim, number_estimations):
     return result
 
 
-dict_names = {"":0, "grad":0, "threshgrad5.0":1, "threshgrad10.0":1, "tick":2, "tick_bfgs":3, "tick_beta":4, "tick_beta_bfgs":5, "approx":2}
+dict_names = {"":0, "grad":0, "threshgrad3.0":1, "threshgrad5.0":1, "threshgrad10.0":1, "tick":2, "tick_bfgs":3, "tick_beta":4, "tick_beta_bfgs":5, "approx":2}
 styles = ["solid", "dashdot", "dashed", "dashed", "dotted", "dotted"]
 colors = ["orange", "orange", "g", "b", "g", "b"]
 
 
 if __name__ == "__main__":
-    number = 9
+    number = 0
     theta = param_dict[number]
     dim = int(np.sqrt(1 + theta.shape[0]) - 1)
     number_estimations = 25
 
-    plot_names = ["grad", "threshgrad5.0", "approx", "tick_bfgs", "tick_beta_bfgs"]
-    labels = ["MLE", "MLE-0.05", "Approx", "Lst-sq", "Grid-lst-sq"]
+    plot_names = ["grad", "threshgrad10.0", "approx", "tick_bfgs", "tick_beta_bfgs"]
+    labels = ["MLE", "MLE-0.10", "Approx", "Lst-sq", "Grid-lst-sq"]
     estimations = []
 
     for file_name in plot_names:
@@ -78,7 +78,7 @@ if __name__ == "__main__":
                 elif plot_names[ref][0:4] == "thre":
                     ax[i, j].plot(x, estimation[dim + dim * i + j] * np.exp(-estimation[dim + dim * dim + i] * x),
                         c=colors[dict_names[plot_names[ref]]], linestyle=styles[dict_names[plot_names[ref]]],
-                        label=labels[ref], alpha=0.5, marker="+", markevery=5)
+                        label=labels[ref], alpha=0.5, marker="X", markevery=5)
                 else:
                     # print(dim + dim * i + j)
                     ax[i, j].plot(x, estimation[dim + dim * i + j] * np.exp(-estimation[dim + dim * dim + i] * x), c=colors[dict_names[plot_names[ref]]], linestyle=styles[dict_names[plot_names[ref]]],label=labels[ref], alpha=0.5)

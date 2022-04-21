@@ -33,14 +33,14 @@ hatches = ["", "///", "", ""]
 
 if __name__ == "__main__":
     dim = 2
-    number_grid = [0,1,8]
+    number_grid = [0,1,9]
     number_estimations = 25
 
-    plot_names = ["", "threshgrad", "approx", "tick_bfgs"]#, "tick_beta", "tick_beta_bfgs"]
-    numbers_thresh = [10.0, 5.0, 5.0]
+    plot_names = ["grad", "threshgrad", "approx", "tick_bfgs"]#, "tick_beta", "tick_beta_bfgs"]
+    numbers_thresh = [10.0, 5.0, 3.0]
     labels = [["MLE", "MLE-0.10", "Approx", "Lst-sq"]]
     labels += [["MLE", "MLE-0.05", "Approx", "Lst-sq"]]
-    labels += [["MLE", "MLE-0.05", "Approx", "Lst-sq"]]
+    labels += [["MLE", "MLE-0.03", "Approx", "Lst-sq"]]
 
     sns.set_theme()
     fig, ax = plt.subplots(3, 3)#, sharey="col")
