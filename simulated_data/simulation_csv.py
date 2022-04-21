@@ -32,8 +32,8 @@ if __name__ == "__main__":
                 if l[1] > 0:
                     trtt[l[1]-1] += 1
         print(trtt/number_repetitions)
-        # hawkes.plot_intensity()
-        # plt.show()
+        hawkes.plot_intensity()
+        plt.show()
 
     # with open('_simulation0', 'r') as read_obj:
     #     csv_reader = csv.reader(read_obj)

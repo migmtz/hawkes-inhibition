@@ -8,7 +8,7 @@ from dictionary_parameters import dictionary as param_dict
 if __name__ == "__main__":
     np.random.seed(0)
 
-    number = 8
+    number = 9
     print("Estimation number ", str(number))
     theta = param_dict[number]
     print(theta)
