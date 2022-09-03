@@ -50,39 +50,22 @@ if __name__ == "__main__":
 
     ax[0].annotate("$T_{(3)}$", xy=(hawkes.timestamps[3][0], 0), xytext=(hawkes.timestamps[3][0] - 0.1, -0.6),
                 annotation_clip=False)
-    #ax[0].annotate(f"$T_3^\star$", xy=(hawkes.timestamps[3][0], 0), xytext=(6.1, -0.06),
-                #annotation_clip=False)
-
-    #ax[0].annotate(f"$T_4$", xy=(hawkes.timestamps[4][0], 0), xytext=(hawkes.timestamps[4][0] - 0.15, -0.1),
-                #annotation_clip=False)
-    #ax[0].annotate(f"$T_4^\star$", xy=(hawkes.timestamps[4][0], 0), xytext=(hawkes.timestamps[4][0] - 0.15, -0.15),
-                #annotation_clip=False)
-
-    #ax[1].annotate(f"$T_1$", xy=(hawkes.timestamps[1][0], 0), xytext=(hawkes.timestamps[1][0]-0.07, -0.6),
-                   #annotation_clip=False)
-    # ax[0].annotate(f"$T_1^\star$", xy=(hawkes.timestamps[1][0], 0), xytext=(hawkes.timestamps[1][0] - 0.2, hawkes.intensity_jumps[0][1]-0.15),
-    # annotation_clip=False)
 
     ax[1].annotate("$T_{(2)}$", xy=(hawkes.timestamps[2][0], 0), xytext=(hawkes.timestamps[2][0]-0.03, -0.6),
                    annotation_clip=False)
-    # ax[0].annotate(f"$T_2^\star$", xy=(hawkes.timestamps[2][0], 0), xytext=(2.5, -0.06),
-    # annotation_clip=False)
-
-    #ax[1].annotate(f"$T_3$", xy=(hawkes.timestamps[3][0], 0), xytext=(hawkes.timestamps[3][0]-0.07, -0.6),
-                   #annotation_clip=False)
 
 
     aux = [alpha[0, m-1] for t,m in hawkes.timestamps[1:4]]
-    ax[0].scatter([t for t,m in hawkes.timestamps[1:4]], np.array(hawkes.intensity_jumps[0][1:4]) - np.array(aux), linewidths=1.5, s=60,
-                 facecolors='none', edgecolors='r')
-    ax[0].scatter([t for t, m in hawkes.timestamps[1:4]], np.array(hawkes.intensity_jumps[0][1:4]),
-                  s=15, c="r", zorder=3)
-    aux = [alpha[1, m - 1] for t, m in hawkes.timestamps[1:4]]
-    ax[1].scatter([t for t, m in hawkes.timestamps[1:4]], np.array(hawkes.intensity_jumps[1][1:4]) - np.array(aux),
-                  linewidths=1.5, s=60,
-                  facecolors='none', edgecolors='r')
-    ax[1].scatter([t for t, m in hawkes.timestamps[1:4]], np.array(hawkes.intensity_jumps[1][1:4]),
-                  s=15, c="r", zorder=3)
+    # ax[0].scatter([t for t,m in hawkes.timestamps[1:4]], np.array(hawkes.intensity_jumps[0][1:4]) - np.array(aux), linewidths=1.5, s=60,
+    #              facecolors='none', edgecolors='r')
+    # ax[0].scatter([t for t, m in hawkes.timestamps[1:4]], np.array(hawkes.intensity_jumps[0][1:4]),
+    #               s=15, c="r", zorder=3)
+    # aux = [alpha[1, m - 1] for t, m in hawkes.timestamps[1:4]]
+    # ax[1].scatter([t for t, m in hawkes.timestamps[1:4]], np.array(hawkes.intensity_jumps[1][1:4]) - np.array(aux),
+    #               linewidths=1.5, s=60,
+    #               facecolors='none', edgecolors='r')
+    # ax[1].scatter([t for t, m in hawkes.timestamps[1:4]], np.array(hawkes.intensity_jumps[1][1:4]),
+    #               s=15, c="r", zorder=3)
     # plt.scatter([0.2, 1.7, 5.75, 11.05, 15], np.array(hawkes.intensity_jumps[1:]), s=15, c="r", zorder=3)
 
     ax[0].set_xlim((0, 2))

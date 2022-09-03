@@ -79,9 +79,10 @@ if __name__ == "__main__":
     alpha /= number_estimations
     beta /= np.amax(number_estimations, axis=1).reshape((250,1))
 
-    sns.set_theme()
+
     fig, axr = plt.subplots(1, len(plot_names))
     ax = axr#.T
+    sns.set_theme()
     hex_list = ['#FF3333', '#FFFFFF', '#33FF49']
     blah = get_continuous_cmap(hex_list)
     blah.set_bad(color=np.array([1,1,1,1]))
@@ -94,20 +95,159 @@ if __name__ == "__main__":
     a_file.close()
 
     #print(alpha[estimated_mask[0], :][:, estimated_mask[0]].shape)
-    heatmap = alpha[estimated_mask[0], :][:, estimated_mask[0]]/(beta[estimated_mask[0], :])
+    heatmap = alpha[estimated_mask[0], :][:, estimated_mask[0]]#/(beta[estimated_mask[0], :])
+    heatmap_beta = alpha[estimated_mask[0], :][:, estimated_mask[0]]/(beta[estimated_mask[0], :])
 
     print("1-norm:", np.linalg.norm(np.maximum(heatmap, 0), ord=1))
     print("Spectral radius:", np.max(np.abs(np.linalg.eigvals(np.maximum(heatmap, 0)))))
     mask = heatmap == 0
     #print(heatmap.shape, mask.shape)
 
-    g = sns.heatmap(heatmap, ax=ax, cmap=blah, center=0, annot=False, linewidths=.5, mask=mask, xticklabels=10, yticklabels=10, square=True)
+    heatmap2 = np.sign(alpha[estimated_mask[0], :][:, estimated_mask[0]])/(beta[estimated_mask[0], :])
+
+    g = sns.heatmap(heatmap2, ax=ax, cmap=blah, center=0, annot=False, linewidths=0.0, mask=mask, xticklabels=10, yticklabels=10, square=True)
     g.set_xticklabels(range(1, np.sum(estimated_mask), 10), rotation=0)
     g.set_yticklabels(range(1, np.sum(estimated_mask), 10), rotation=90)
-    #fig2, ax2 = plt.subplots()
-    # sns.heatmap(beta[estimated_mask[0], :], ax=ax2)
+    ax.set_title("sign(alph)/beta")
 
-    # fig3, ax3 = plt.subplots(1, 4, sharey=True)
+    figalt, axalt = plt.subplots()
+    galt = sns.heatmap(np.sign(heatmap), ax=axalt, cmap=blah, center=0, annot=False, linewidths=0.0, mask=mask, xticklabels=10,
+                    yticklabels=10, square=True)
+    galt.set_xticklabels(range(1, np.sum(estimated_mask), 10), rotation=0)
+    galt.set_yticklabels(range(1, np.sum(estimated_mask), 10), rotation=90)
+    axalt.set_title("sign(alph)")
+
+
+    fig2, ax2 = plt.subplots()
+    sns.heatmap(beta[estimated_mask[0], :], ax=ax2, cmap=blah, center=0)
+
+    fig3, ax3 = plt.subplots(2,1)
+    heatmap = np.sign(heatmap)
+    pos_giv = np.sum(heatmap*(heatmap > 0), axis=0)  # horizontal
+    pos_rec = np.sum(heatmap*(heatmap > 0), axis=1)  # vertical
+
+    neg_giv = np.sum(heatmap*(heatmap < 0), axis=0)  # horizontal
+    neg_rec = np.sum(heatmap*(heatmap < 0), axis=1)  # vertical
+    arg_aux = np.argsort(-(pos_giv - neg_giv))
+
+    ax3[0].plot(pos_rec[arg_aux], label="Positive receiving", c="g")
+    ax3[0].plot(neg_rec[arg_aux], label="Negative receiving", c="r")
+    ax3[1].plot(pos_giv[arg_aux], label="Positive giving", c="g")
+    ax3[1].plot(neg_giv[arg_aux], label="Negative giving", c="r")
+    ax3[0].legend()
+    ax3[1].legend()
+
+    fig3ndiag, ax3ndiag = plt.subplots(2, 1)
+    heatmap = np.sign(heatmap)
+    pos_giv = np.sum(heatmap * (heatmap > 0), axis=0) - (heatmap.diagonal() * (heatmap.diagonal() > 0)) # horizontal
+    pos_rec = np.sum(heatmap * (heatmap > 0), axis=1) - (heatmap.diagonal() * (heatmap.diagonal() > 0)) # vertical
+
+    neg_giv = np.sum(heatmap * (heatmap < 0), axis=0) - (heatmap.diagonal() * (heatmap.diagonal() < 0))# horizontal
+    neg_rec = np.sum(heatmap * (heatmap < 0), axis=1) - (heatmap.diagonal() * (heatmap.diagonal() < 0))# vertical
+    arg_aux = np.argsort(-(pos_giv - neg_giv))
+
+    ax3ndiag[0].plot(pos_rec[arg_aux], label="Positive receiving", c="g")
+    ax3ndiag[0].plot(neg_rec[arg_aux], label="Negative receiving", c="r")
+    ax3ndiag[1].plot(pos_giv[arg_aux], label="Positive giving", c="g")
+    ax3ndiag[1].plot(neg_giv[arg_aux], label="Negative giving", c="r")
+    ax3ndiag[0].legend()
+    ax3ndiag[1].legend()
+    print("Receving null ?", np.sum((pos_rec - neg_rec) == 0), np.arange(len(pos_rec))[(pos_rec - neg_rec) == 0])
+    print("Giving null ?", np.sum((pos_giv - neg_giv) == 0), np.arange(len(pos_rec))[(pos_giv - neg_giv) == 0])
+    print("Giving null how many receiving", (pos_rec - neg_rec)[(pos_giv - neg_giv) == 0])
+
+    fig3pos, ax3pos = plt.subplots(2, 1)
+    heatmappos = heatmap[heatmap.diagonal() > 0, :][:, heatmap.diagonal() > 0]
+    pos_giv = np.sum(heatmappos * (heatmappos > 0), axis=0) - 1  # horizontal
+    pos_rec = np.sum(heatmappos * (heatmappos > 0), axis=1) - 1  # vertical
+
+    neg_giv = np.sum(heatmappos * (heatmappos < 0), axis=0)  # horizontal
+    neg_rec = np.sum(heatmappos * (heatmappos < 0), axis=1)  # vertical
+    arg_aux = np.argsort(-(pos_giv - neg_giv))
+
+    ax3pos[0].plot(pos_rec[arg_aux], label="Positive receiving", c="g")
+    ax3pos[0].plot(neg_rec[arg_aux], label="Negative receiving", c="r")
+    ax3pos[1].plot(pos_giv[arg_aux], label="Positive giving", c="g")
+    ax3pos[1].plot(neg_giv[arg_aux], label="Negative giving", c="r")
+    ax3pos[0].legend()
+    ax3pos[1].legend()
+    fig3pos.suptitle("Positive auto")
+
+    fig3neg, ax3neg = plt.subplots(2, 1)
+    heatmapneg = heatmap[heatmap.diagonal() < 0,:][:, heatmap.diagonal() < 0]
+    pos_giv = np.sum(heatmapneg * (heatmapneg > 0), axis=0)  # horizontal
+    pos_rec = np.sum(heatmapneg * (heatmapneg > 0), axis=1)  # vertical
+
+    neg_giv = np.sum(heatmapneg * (heatmapneg < 0), axis=0) -1  # horizontal
+    neg_rec = np.sum(heatmapneg * (heatmapneg < 0), axis=1) -1  # vertical
+    arg_aux = np.argsort(-(pos_giv - neg_giv))
+
+    ax3neg[0].plot(pos_rec[arg_aux], label="Positive receiving", c="g")
+    ax3neg[0].plot(neg_rec[arg_aux], label="Negative receiving", c="r")
+    ax3neg[1].plot(pos_giv[arg_aux], label="Positive giving", c="g")
+    ax3neg[1].plot(neg_giv[arg_aux], label="Negative giving", c="r")
+    ax3neg[0].legend()
+    ax3neg[1].legend()
+    fig3neg.suptitle("Negative auto")
+
+    fig4, ax4 = plt.subplots()
+    for i in range(heatmap_beta.shape[0]):
+        heatmap_beta[i, i] = 0.0
+    ax4.scatter(heatmap_beta, heatmap_beta.T)
+
+    # fig3, ax3 = plt.subplots()
+    # sns.heatmap(np.sum(heatmap, axis=0, keepdims=True), ax=ax3, cmap=blah, center=0)
+    #
+    # fig4, ax4 = plt.subplots()
+    # sns.heatmap(np.sum(heatmap, axis=1, keepdims=True), ax=ax4, cmap=blah, center=0)
+    #
+    # fig5, ax5 = plt.subplots()
+    # sns.heatmap(np.sign(np.multiply(np.sum(heatmap, axis=1, keepdims=True), np.sum(heatmap, axis=0, keepdims=True).T)), ax=ax5, cmap=blah, center=0)
+    #
+    #sum_hor = np.sum(np.abs(np.sign(heatmap)), axis=0)
+    #sum_ver = np.sum(np.abs(np.sign(heatmap)), axis=1)
+    sum_hor = np.sum(np.abs(heatmap), axis=0)
+    sum_ver = np.sum(np.abs(heatmap), axis=1)
+    sum = sum_hor + sum_ver
+    arg_aux = np.argsort(-sum)
+    fig6, ax6 = plt.subplots()
+    #sns.heatmap(np.sign(heatmap2[arg_aux][:,arg_aux]), ax=ax6, cmap=blah, center=0, annot=False, linewidths=0.0, mask=mask[arg_aux][:,arg_aux], xticklabels=10, yticklabels=10, square=True)
+    sns.heatmap(heatmap[arg_aux][:,arg_aux], ax=ax6, cmap=blah, center=0, annot=False, linewidths=0.0, mask=mask[arg_aux][:,arg_aux], xticklabels=10, yticklabels=10, square=True)
+
+    fig7, ax7 = plt.subplots(2, 2, gridspec_kw={'width_ratios': [7, 1], "height_ratios": [1, 7]}, figsize=(8,8))
+    sns.heatmap(heatmap[arg_aux][:, arg_aux], ax=ax7[1, 0], cmap=blah, center=0, annot=False, linewidths=0.0,
+                mask=mask[arg_aux][:, arg_aux], xticklabels=10, yticklabels=10, cbar=False)
+
+    ax7[0, 0].bar(x=np.arange(len(sum_hor))+0.5, height=sum_hor[arg_aux], width=1, linewidth=0.0)
+    ax7[0, 0].set_xlim(0, len(sum_hor))
+    ax7[0, 0].get_xaxis().set_visible(False)
+    ax7[0, 0].set_title("Giving interactions")
+
+    ax7[1, 1].barh(y=np.arange(len(sum_ver)) + 0.5, width=sum_ver[arg_aux], height=1, linewidth=0.0)
+    ax7[1, 1].set_ylim(len(sum_hor), 0)
+    ax7[1, 1].get_yaxis().set_visible(True)
+    ax7[1, 1].yaxis.set_label_position("right")
+    ax7[1, 1].set_ylabel("Receiving interactions", rotation=270, labelpad=20)
+
+    plt.subplots_adjust(wspace=0.0, hspace=0.0)
+
+    fig7.delaxes(ax7[0,1])
+
+    fig8, ax8 = plt.subplots()
+    arg_hor = np.argsort(-(sum_hor - sum_ver))
+    ax8.plot((sum_hor - sum_ver)[arg_hor])
+    ax8.set_title("Giv - Rec")
+
+    # curve, = ax7[0, 1].plot(np.flip(sum_ver[arg_aux]))
+    # newx = curve.get_xdata()
+    # newy = curve.get_ydata()
+    # curve2, = ax7[1, 1].plot(sum_ver[arg_aux])
+    # curve2.set_xdata(newy)
+    # curve2.set_ydata(newx)
+    # ax7[1, 1].set_xlim(ax7[0, 1].get_ylim())
+    # ax7[1, 1].set_ylim(ax7[0, 1].get_xlim())
+
+    # # fig3, ax3 = plt.subplots(1, 4, sharey=True)
     #
     # diag_list = []
     # beta_list = []

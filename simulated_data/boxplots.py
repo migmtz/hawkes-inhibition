@@ -43,7 +43,7 @@ if __name__ == "__main__":
     labels += [["MLE", "MLE-0.03", "Approx", "Lst-sq"]]
 
     sns.set_theme()
-    fig, ax = plt.subplots(3, 3)#, sharey="col")
+    fig, ax = plt.subplots(3, 3, figsize=(14, 8))#, sharey="col")
 
     for count, number in enumerate(number_grid):
         theta = param_dict[number]
@@ -59,12 +59,12 @@ if __name__ == "__main__":
         for ref, i in enumerate(errors):
             if ref == 2:
                 boxplot = ax[count, ref].boxplot(i[:, 0:3], patch_artist=True)
-                ax[count, ref].set_xticklabels(labels[count][0:3])
+                ax[count, ref].set_xticklabels(labels[count][0:3], fontdict={"fontsize": 13})
             else:
                 boxplot = ax[count, ref].boxplot(i, patch_artist=True)
-                ax[count, ref].set_xticklabels(labels[count])
+                ax[count, ref].set_xticklabels(labels[count], fontdict={"fontsize": 13})
             if count == 0:
-                ax[count, ref].title.set_text(text[ref])
+                ax[count, ref].set_title(text[ref], fontdict={"fontsize": 15})
             for j, patch in enumerate(boxplot['boxes']):
                 if len(plot_names[j]) > 9:
                     alpha = 0.75
@@ -73,9 +73,11 @@ if __name__ == "__main__":
                     alpha = 1.0
                     hatch = ""
                 patch.set(alpha=alpha, hatch=hatch, facecolor=colors[j])
-        ax[count, 0].set_ylabel("Scenario ("+str(count+1)+")")
+        ax[count, 0].set_ylabel("Scenario ("+str(count+1)+")", fontdict={"fontsize": 15})
 
         #legend_elements = [Patch(facecolor=colors[i], edgecolor='k', hatch=hatches[i], label=labels[i]) for i in range(4)]
 
     # ax[0, 0].legend(handles=legend_elements, loc='best')
+    plt.savefig('boxplots2O.pdf', bbox_inches='tight', format="pdf", quality=90)
+
     plt.show()

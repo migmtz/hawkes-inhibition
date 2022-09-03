@@ -67,13 +67,13 @@ def obtain_average_estimation(file_name, numbers):
 
 if __name__ == "__main__":
     np.random.seed(1)
-    plot_names = ["grad", "threshgrad20.0", "threshgrad40.0", "threshgrad50.0", "threshgrad60.0", "threshgrad75.0", "threshgrad90.0", "threshgrad95.0", "threshgradrevisited90.0", "diag"]
+    plot_names = ["grad", "threshgrad20.0", "threshgrad40.0", "threshgrad50.0", "threshgrad60.0", "threshgrad75.0", "threshgrad90.0", "threshgrad95.0", "diag"]#"threshgradrevisited90.0", "diag"]
     labels = ["MLE", "MLE-0.20", "MLE-0.40", "MLE-0.50", "MLE-0.60", "MLE-0.75", "MLE-0.90", "MLE-0.95", "Diag"]
 
     estimations = []
 
     sns.set_theme()
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(14,8))
 
     for label, file_name in zip(labels, plot_names):
         mu, alpha, beta = obtain_average_estimation(file_name, range(1, 11))
@@ -134,11 +134,15 @@ if __name__ == "__main__":
         a = p_values.reshape((1, len(p_values)))
         print(" \\\\\n".join([" & ".join(map(str, line)) for line in a]))
 
-        sc = ax.scatter([i for i in range(len(p_values))], np.sort(p_values), label=label, s=32)
+        sc = ax.scatter([i for i in range(len(p_values))], np.sort(p_values), label=label, s=28)
         argsort = np.argsort(p_values)
         ax.scatter([[np.argmax(argsort)]], [p_values[-1]], c=sc.get_edgecolor(), marker="X", s=256, edgecolors="k")
 
-    ax.plot([i for i in range(len(p_values))], [(i * 0.05) / len(p_values) for i in range(len(p_values))])
-    plt.legend(prop={'size': 18})
+    ax.plot([i for i in range(len(p_values))], [(i * 0.05) / len(p_values) for i in range(len(p_values))], label="BH-corrected rejection threshold")
+    ax.set_yscale('log')
+
+    plt.legend(prop={'size': 14})
+    plt.savefig('p_values_log_2_upd.pdf', bbox_inches='tight', format="pdf", quality=90)
+
     plt.show()
 

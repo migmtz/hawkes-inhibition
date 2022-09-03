@@ -10,7 +10,7 @@ rcParams["mathtext.fontset"] = "dejavuserif"
 
 if __name__ == "__main__":
     # Set seed
-    np.random.seed(3)
+    np.random.seed(0)
 
     dim = 2  # 2, 3 ou 4
 
@@ -40,8 +40,6 @@ if __name__ == "__main__":
 
     else:
         raise ValueError("Nein")
-
-    alpha = np.abs(alpha)
 
     hawkes = multivariate_exponential_hawkes(mu=mu, alpha=alpha, beta=beta, max_jumps=15*(dim-1))
 
