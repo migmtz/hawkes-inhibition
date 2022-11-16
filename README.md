@@ -1,6 +1,6 @@
 # MLE for Exponential Hawkes Process
 
-Source code for [Inference of multivariate exponential Hawkes processes with inhibition and application to neuronal activity]([https://hal.archives-ouvertes.fr/hal-03652497/])
+Source code for [Inference of multivariate exponential Hawkes processes with inhibition and application to neuronal activity](https://hal.archives-ouvertes.fr/hal-03652497/) [[1]](#1). 
 
 It includes a class to simulate an univariate Hawkes process and functions to compute the log-likelihood presented in the aforementioned paper along with the approximated version from Lemonnier's work [[2]](#2).
 
