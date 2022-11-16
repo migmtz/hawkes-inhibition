@@ -1,8 +1,8 @@
 # MLE for Exponential Hawkes Process
 
-Source code for [Maximum likelihood estimation for Hawkes processes with self-excitation or inhibition](https://authors.elsevier.com/c/1dbhNc8a~AzOW). 
+Source code for [Inference of multivariate exponential Hawkes processes with inhibition and application to neuronal activity]([https://authors.elsevier.com/c/1dbhNc8a~AzOW](https://hal.archives-ouvertes.fr/hal-03652497/))[[1]](#1). 
 
-It includes a class to simulate an univariate Hawkes process and functions to compute the log-likelihood presented in the aforementioned paper along with the approximated version from Lemonnier's work [[1]](#1).
+It includes a class to simulate an univariate Hawkes process and functions to compute the log-likelihood presented in the aforementioned paper along with the approximated version from Lemonnier's work [[2]](#2).
 
 ## Example
 
@@ -53,4 +53,7 @@ Miguel Alejandro Martinez Herrera
 ## References
 
 <a id="1">[1]</a>
+A. Bonnet, M. Martinez Herrera, M. Sangnier, Inference of multivariate exponential Hawkes processes with inhibition and application to neuronal activity. arXiv:2205.04107 
+
+<a id="2">[2]</a>
 R. Lemonnier, N. Vayatis, Nonparametric markovian learning of triggering kernels for mutually exciting and mutually inhibiting multivariate hawkes processes, in: Machine Learning and Knowledge Discovery in Databases, Springer Berlin Heidelberg, 2014, p. 161–176
