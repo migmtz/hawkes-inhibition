@@ -25,6 +25,7 @@ def obtain_average_estimation(file_name, number, dim, number_estimations):
                 result += np.array([float(i) for i in row])
                 n += 1
     result /= n
+    print(n)
 
     return result
 
@@ -36,11 +37,13 @@ if __name__ == "__main__":
     mu = theta[:dim]
     alpha = theta[dim:-dim].reshape((dim, dim))
     beta = theta[-dim:]
-    number_estimations = 3
+    number_estimations = 25
     annot = False
 
-    plot_names = ["grad", "threshgrad25.0", "approx", "tick_bfgs"]
-    labels = ["MLE", "MLE-$0.25$", "Approx", "Lst-sq"]
+    # plot_names = ["grad", "threshgrad25.0", "approx", "tick_bfgs"]
+    # labels = ["MLE", "MLE-$0.25$", "Approx", "Lst-sq"]
+    plot_names = ["grad", "threshgrad25.0", "confidencegrad", "tick_bfgs"]
+    labels = ["MLE", "MLE-$0.25$", "Confid", "Lst-sq"]
     estimations = [obtain_average_estimation(file_name, number, dim, number_estimations) for file_name in plot_names]
 
     sns.set_theme()
@@ -83,7 +86,8 @@ if __name__ == "__main__":
             alpha_est[np.abs(alpha_est) <= 1e-16] = 0
             beta_est = estimation[-dim:]
             print("Error estimation"+plot_names[ref], relative_squared_loss(theta, estimation))
-            print(alpha_est)
+            #print(alpha_est)
+            print(np.sqrt((beta -beta_est)**2), beta, beta_est)
         heat_estimated = alpha_est / beta_est
         # heat_estimated[np.abs(heat_estimated) <= 0.01] = 0
 

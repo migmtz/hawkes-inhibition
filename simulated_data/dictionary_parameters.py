@@ -79,4 +79,5 @@ if __name__ == "__main__":
     print(alpha, beta, np.maximum(alpha/beta, 0))
     print(np.sum(np.maximum(alpha/beta, 0), axis=1))
     print("eig", np.linalg.eigvals(alpha), np.linalg.eigvals(alpha.T))
+    print("Conditions", np.linalg.norm(alpha/beta, ord=np.inf), np.max(np.abs(np.linalg.eig(alpha/beta)[0])))
     print(" \\\\\n".join([" & ".join(map(str, line)) for line in a]))
