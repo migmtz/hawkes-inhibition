@@ -47,7 +47,7 @@ if __name__ == "__main__":
         # for i in orig_dict_filtre.keys():
         #     number_estimations[i-1] += 1
 
-        plot_names = ["minmaxgrad"]
+        plot_names = ["minmaxgradthresh90.0"]
         labels = ["MLE-90"]
         estimation = obtain_average_estimation(plot_names[0], number, dim, 1)
         mu_est = estimation[:dim]

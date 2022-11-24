@@ -67,8 +67,8 @@ def obtain_average_estimation(file_name, numbers):
 
 if __name__ == "__main__":
     np.random.seed(1)
-    plot_names = ["grad", "threshgrad20.0", "threshgrad40.0", "threshgrad50.0", "threshgrad60.0", "threshgrad75.0", "threshgrad90.0", "threshgrad95.0", "confidencegrad", "minmaxgrad"]#"threshgradrevisited90.0", "diag"]
-    labels = ["MLE", "MLE-0.20", "MLE-0.40", "MLE-0.50", "MLE-0.60", "MLE-0.75", "MLE-0.90", "MLE-0.95", "Confidence", "MinMax"]
+    plot_names = ["grad", "minmaxgradthresh5.0", "minmaxgradthresh10.0", "minmaxgradthresh15.0", "minmaxgradthresh20.0", "minmaxgradthresh50.0", "minmaxgradthresh90.0", "confidencegrad", "minmaxgrad", "threshgrad90.0"]#"threshgradrevisited90.0", "diag"]
+    labels = ["MLE", "MMT-0.05", "MMT-0.10", "MMT-0.15", "MMT-0.20", "MMT-0.50", "MMT-0.90", "Confidence", "MinMax", "MLE-0.9"]
 
     estimations = []
 

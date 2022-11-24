@@ -99,7 +99,7 @@ if __name__ == "__main__":
     ax[1].set_xlim((0, times1[1]))
     ax[2].set_xlim((0, times1[1]))
 
-    ax[0].set_ylabel("$\lambda^k$")
+    ax[0].set_ylabel("$\lambda^i$")
 
     ax[0].set_xlabel("$t$")
     ax[1].set_xlabel("$t$")

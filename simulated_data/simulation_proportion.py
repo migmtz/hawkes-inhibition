@@ -112,7 +112,7 @@ Returns
 if __name__ == "__main__":
     np.random.seed(0)
 
-    number = 6
+    number = 0
     print("Estimation number ", str(number))
     theta = param_dict[number]
     print(theta)
