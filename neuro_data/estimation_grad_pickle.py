@@ -122,7 +122,7 @@ class multivariate_estimator_bfgs_grad(object):
 
 
 if __name__ == "__main__":
-    numbers = [1]
+    numbers = range(1, 21)
 
     for number in numbers:
         np.random.seed(0)
