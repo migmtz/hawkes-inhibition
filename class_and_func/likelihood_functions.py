@@ -202,6 +202,7 @@ Returns
             beta = np.array(theta[dim * (dim + 1):]).reshape((dim, 1))
     else:
         mu, alpha, beta = (i.copy() for i in theta)
+    print(mu.shape, alpha.shape, beta.shape)
     beta = beta + 1e-10
 
     beta_1 = 1/beta
@@ -404,6 +405,127 @@ Returns
     if not(dimensional):
         likelihood = np.sum(likelihood)
     return -likelihood, grad_comp.squeeze()
+
+
+def multivariate_grad_likelihood(theta, tList, dimensional=False):
+    """
+
+    Parameters
+    ----------
+    theta : tuple of array
+        Tuple containing 3 arrays. First corresponds to vector of baseline intensities mu. Second is a square matrix
+        corresponding to interaction matrix alpha. Last is vector of recovery rates beta.
+
+    tList : list of tuple
+        List containing tuples (t, m) where t is the time of event and m is the mark (dimension). The marks must go from
+        1 to nb_of_dimensions.
+        Important to note that this algorithm expects the first and last time to mark the beginning and
+        the horizon of the observed process. As such, first and last marks must be equal to 0, signifying that they are
+        not real event times.
+        The algorithm checks by itself if this condition is respected, otherwise it sets the beginning at 0 and the end
+        equal to the last time event.
+    dim : int
+        Number of processes only necessary if providing 1-dimensional theta. Default is None
+    dimensional : bool
+        Whether to return the sum of loglikelihood or decomposed in each dimension. Default is False.
+Returns
+    -------
+    likelihood : array of float
+        Value of likelihood at each process.
+        The value returned is the opposite of the mathematical likelihood in order to use minimization packages.
+    """
+
+    if isinstance(theta, np.ndarray):
+        dim = int(np.sqrt(1 + theta.shape[0]) - 1)
+        mu = np.array(theta[:dim]).reshape((dim, 1))
+        alpha = np.array(theta[dim:dim * (dim + 1)]).reshape((dim, dim))
+        beta = np.array(theta[dim * (dim + 1):]).reshape((dim, 1))
+    else:
+        mu, alpha, beta = (i.copy() for i in theta)
+        dim = mu.shape[0]
+    beta = beta + 1e-10
+
+    beta_1 = 1/beta
+
+    timestamps = tList.copy()
+
+    # We first check if we have the correct beginning and ending.
+    if timestamps[0][1] > 0:
+        timestamps = [(0, 0)] + timestamps
+    if timestamps[-1][1] > 0:
+        timestamps += [(timestamps[-1][0], 0)]
+
+    # Initialise values
+    tb, mb = timestamps[1]
+
+    ############# Gradient
+
+    # Initialize grad
+    grad_mu = np.zeros((dim, 1))
+    grad_alpha = np.zeros((dim, dim))
+    grad_beta = np.zeros((dim, 1))
+    # For first interval/jump
+    grad_mu += tb
+    grad_mu[mb - 1] -= 1 / mu[mb - 1]
+
+    # auxiliary for C(ai, bi)
+    dA = np.zeros((dim, dim))
+    dB = np.zeros((dim, 1))
+
+    dA[:, mb - 1] += 1
+    dB += tb * alpha[:, [mb - 1]]
+
+    ic = mu + alpha[:, [mb - 1]]
+    # j=1
+
+    for tc, mc in timestamps[2:]:
+        # First we estimate the compensator
+        inside_log = (mu - np.minimum(ic, 0))/mu
+        # Restart time
+        t_star = tb + np.multiply(beta_1, np.log(inside_log))
+        exp_tpu = np.exp(-beta * (tc - tb))
+        aux = 1/inside_log  # inside_log can't be equal to zero (coordinate-wise)
+
+        ############ Gradient
+
+        #### grad_comp for mu
+        grad_mu += (t_star < tc) * (tc - t_star)
+
+        # grad Cn wrt alpha
+        grad_alpha += (t_star < tc) * (beta_1 * dA * (aux - exp_tpu))
+
+        #### grad_comp for alpha
+        grad_beta += (t_star < tc) * (
+                beta_1 * (dB - tb * (ic - mu)) * (aux - exp_tpu) + beta_1 * (ic - mu) * (
+                tc - tb) * exp_tpu - (beta_1 ** 2) * (ic - mu) * (aux - exp_tpu) + beta_1 * mu * (t_star - tb))
+
+        # Then, estimation of intensity before next jump.
+        if mc > 0:
+            old_ic = ic
+            ic = mu + np.multiply((ic - mu), np.exp(-beta*(tc-tb)))
+
+            if ic[mc - 1] <= 0.0:
+                res = 1e8
+                return np.zeros((dim*dim+2*dim, ))
+            else:
+                ######## Gradient
+
+                grad_mu[mc - 1] -= 1 / ic[mc - 1]
+                grad_alpha[[mc - 1], :] -= (dA[[mc - 1], :] * exp_tpu[mc - 1]) / (ic[mc - 1])
+                grad_beta[mc - 1] -= ((dB[mc - 1] - tc * (old_ic[mc - 1] - mu[mc - 1])) * exp_tpu[mc - 1]) / (ic[mc - 1])
+
+            ic += alpha[:, [mc - 1]]
+
+            ######### Gradient
+
+            dA *= exp_tpu
+            dA[:, mc - 1] += 1
+            dB = exp_tpu * dB + tc * alpha[:, [mc - 1]]
+
+        tb = tc
+    grad_comp = np.concatenate((grad_mu, np.ravel(grad_alpha).reshape((dim * dim, 1)), grad_beta))
+    return grad_comp.squeeze()
+
 
 def multivariate_loglikelihood_with_grad_pen(theta, tList, eps, dim=None, eta=None, C=1.0):
     """

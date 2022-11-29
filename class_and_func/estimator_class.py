@@ -434,6 +434,59 @@ class multivariate_estimator_bfgs_grad(object):
         return self.mu_estim, self.alpha_estim, self.beta_estim
 
 
+class multivariate_estimator_proximal(object):
+    """
+    Estimator class for Exponential Hawkes process obtained through minimizaton of a loss using the L-BFGS-B algorithm.
+
+    Attributes
+    ----------
+    res : OptimizeResult
+        Result from minimization.
+    """
+
+    def __init__(self, grad=multivariate_grad_likelihood, dimension=None, initial_guess="random", C=1, eps=1e-6,
+                 lr=lambda x: 0.1):
+        if dimension is None:
+            raise ValueError("Dimension is necessary for initialization.")
+        self.dim = dimension
+
+        self.grad = grad
+
+        self.initial_guess = np.concatenate((np.concatenate((np.ones(self.dim), np.ones(self.dim * self.dim))), np.ones(self.dim)))
+
+        self.C = C
+        self.eps = eps
+        self.lr = lr
+
+    def fit(self, timestamps, print_every=100, limit_repet=10000):
+
+        limit = 0
+        xk = self.initial_guess
+        flag = True
+        control_list = []
+
+        while flag and (limit <= limit_repet):
+            gradient = self.grad(xk, timestamps)
+            xk_previous = xk
+            xk = xk_previous - gradient*self.lr(limit)
+
+            xk[self.dim:-self.dim] = (xk[self.dim:-self.dim] + self.C*self.lr(limit)) * (xk[self.dim:-self.dim] < -self.C*self.lr(limit)) + \
+                                     (xk[self.dim:-self.dim] - self.C*self.lr(limit)) * (xk[self.dim:-self.dim] > self.C*self.lr(limit))
+
+            flag = np.linalg.norm(xk-xk_previous, ord=1) > self.eps
+            limit += 1
+
+            if limit % print_every == 0:
+                print("Repetition number: ", limit, xk)
+                control_list += [xk]
+
+        self.mu_estim = np.array(xk[0: self.dim])
+        self.alpha_estim = np.array(xk[self.dim: self.dim + self.dim ** 2]).reshape((self.dim, self.dim))
+        self.beta_estim = np.array(xk[-self.dim:])
+
+        return self.mu_estim, self.alpha_estim, self.beta_estim, control_list
+
+
 class multivariate_estimator_jit(object):
     """
     Estimator class for Exponential Hawkes process obtained through minimizaton of a loss using the L-BFGS-B algorithm.
