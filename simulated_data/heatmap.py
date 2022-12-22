@@ -37,12 +37,12 @@ if __name__ == "__main__":
     mu = theta[:dim]
     alpha = theta[dim:-dim].reshape((dim, dim))
     beta = theta[-dim:]
-    number_estimations = 25
+    number_estimations = 5
     annot = False
 
     # plot_names = ["grad", "threshgrad25.0", "approx", "tick_bfgs"]
     # labels = ["MLE", "MLE-$0.25$", "Approx", "Lst-sq"]
-    plot_names = ["grad", "threshgrad25.0", "confidencegrad", "tick_bfgs"]
+    plot_names = ["grad", "threshgrad25.0", "conf5", "conf5interval"]
     labels = ["MLE", "MLE-$0.25$", "Confid", "Lst-sq"]
     estimations = [obtain_average_estimation(file_name, number, dim, number_estimations) for file_name in plot_names]
 
@@ -76,14 +76,14 @@ if __name__ == "__main__":
             # else:
             mu_est = estimation[:dim]
             alpha_est = estimation[dim:].reshape((dim, dim))
-            alpha_est[np.abs(alpha_est) <= 1e-16] = 0
+            alpha_est[np.abs(alpha_est) <= 1e-15] = 0
             beta_est = beta
             print("Error estimation " + plot_names[ref],
                   relative_squared_loss(theta, np.concatenate((estimation, beta.squeeze()))))
         else:
             mu_est = estimation[:dim]
             alpha_est = estimation[dim:-dim].reshape((dim, dim))
-            alpha_est[np.abs(alpha_est) <= 1e-16] = 0
+            alpha_est[np.abs(alpha_est) <= 1e-15] = 0
             beta_est = estimation[-dim:]
             print("Error estimation"+plot_names[ref], relative_squared_loss(theta, estimation))
             #print(alpha_est)

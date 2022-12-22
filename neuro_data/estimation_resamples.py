@@ -144,7 +144,7 @@ class multivariate_estimator_bfgs_grad(object):
 
 
 if __name__ == "__main__":
-    numbers = range(3, 4)
+    numbers = range(15, 20)
 
     ######################
     # Obtain Estimations for initial_guess  20
@@ -212,7 +212,8 @@ if __name__ == "__main__":
         with open("estimation_resamples/_resamples_"+str(number) + 'grad', 'w', newline='') as myfile:
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
 
-            loglikelihood_estimation = multivariate_estimator_bfgs_grad(dimension=dim, initial_guess="random", options={"disp": 10})
+            loglikelihood_estimation = multivariate_estimator_bfgs_grad(dimension=dim, initial_guess="random", options={"disp": False
+                                                                                                                         })
 
             print("Starting estimation...")
             start_time = time.time()

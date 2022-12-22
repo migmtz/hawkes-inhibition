@@ -34,7 +34,8 @@ if __name__ == "__main__":
     beta = np.zeros((250, 1))
 
     number_estimations = np.zeros((250, 250))
-    for number in [1,2, 3,20]:
+    only_heatmap = False
+    for number in range(1, 21):
         a_file = open("resamples/resample" + str(number) + "", "rb")
         tList, filtre_dict_orig, orig_dict_filtre = pickle.load(a_file)
         dim = len(filtre_dict_orig)
@@ -47,7 +48,7 @@ if __name__ == "__main__":
         # for i in orig_dict_filtre.keys():
         #     number_estimations[i-1] += 1
 
-        plot_names = ["grad"]
+        plot_names = ["minmax"]
         labels = ["Grad"]
         estimation = obtain_average_estimation(plot_names[0], number, dim, 1)
         mu_est = estimation[:dim]
@@ -73,16 +74,11 @@ if __name__ == "__main__":
 
             alpha[int(filtre_dict_orig[i]) - 1, :] += np.array(aux)
             beta[int(filtre_dict_orig[i]) - 1] += beta_est[i - 1]
-        print(np.min(beta_est))
 
     number_estimations[number_estimations == 0] = 1
     mu /= np.amax(number_estimations, axis=1).reshape((250,1))
     alpha /= number_estimations
     beta /= np.amax(number_estimations, axis=1).reshape((250,1))
-
-    figi,axi = plt.subplots()
-    print("here", np.min(beta))
-
 
     # fig, axr = plt.subplots(1, len(plot_names))
     # ax = axr#.T
@@ -115,66 +111,68 @@ if __name__ == "__main__":
     g.set_yticklabels(range(1, np.sum(estimated_mask), 10), rotation=90)
     ax.set_title("sign(alph)/beta")
 
-    figalt, axalt = plt.subplots(figsize=(10, 12))
-    blah = LinearSegmentedColormap.from_list('Custom', hex_list, len(hex_list))
-    galt = sns.heatmap(np.sign(heatmap2), ax=axalt, cmap=blah, center=0, annot=False, linewidths=0.0, mask=mask, xticklabels=10,
-                    yticklabels=10, square=False, cbar=True, cbar_kws={"orientation": "horizontal", "pad":0.05})
-    galt.set_xticklabels(range(1, np.sum(estimated_mask), 10), rotation=0)
-    galt.set_yticklabels(range(1, np.sum(estimated_mask), 10), rotation=90)
-    colorbar = galt.collections[0].colorbar
-    colorbar.set_ticks([-0.667, 0, 0.667])
-    colorbar.set_ticklabels(['Inhibiting interaction', 'No interaction', 'Exciting interaction'])
-    axalt.set_title("$(\\tilde{\\alpha}_{ij})_{ij}^+$")
-    #figalt.savefig('heatmap_estimation.pdf', bbox_inches='tight', format="pdf", quality=90)
+    if not(only_heatmap):
 
-    fig7, ax7 = plt.subplots(2, 2, gridspec_kw={'width_ratios': [7, 1], "height_ratios": [1, 7]}, figsize=(10,10))
-    heatmap = np.sign(heatmap)
-    sum_hor = np.sum(np.abs(heatmap), axis=0)
-    sum_ver = np.sum(np.abs(heatmap), axis=1)
-    sum = sum_hor + sum_ver
-    arg_aux = np.argsort(-sum)
-    g7 = sns.heatmap(heatmap[arg_aux][:, arg_aux], ax=ax7[1, 0], cmap=blah, center=0, annot=False, linewidths=0.0,
-                mask=mask[arg_aux][:, arg_aux], xticklabels=10, yticklabels=10, cbar=False, cbar_kws={"orientation": "horizontal", "pad":0.05})
+        figalt, axalt = plt.subplots(figsize=(10, 12))
+        blah = LinearSegmentedColormap.from_list('Custom', hex_list, len(hex_list))
+        galt = sns.heatmap(np.sign(heatmap2), ax=axalt, cmap=blah, center=0, annot=False, linewidths=0.0, mask=mask, xticklabels=10,
+                        yticklabels=10, square=False, cbar=True, cbar_kws={"orientation": "horizontal", "pad":0.05})
+        galt.set_xticklabels(range(1, np.sum(estimated_mask), 10), rotation=0)
+        galt.set_yticklabels(range(1, np.sum(estimated_mask), 10), rotation=90)
+        colorbar = galt.collections[0].colorbar
+        colorbar.set_ticks([-0.667, 0, 0.667])
+        colorbar.set_ticklabels(['Inhibiting interaction', 'No interaction', 'Exciting interaction'])
+        axalt.set_title("$(\\tilde{\\alpha}_{ij})_{ij}^+$")
+        #figalt.savefig('heatmap_estimation.pdf', bbox_inches='tight', format="pdf", quality=90)
 
-    ax7[0, 0].bar(x=np.arange(len(sum_hor))+0.5, height=sum_hor[arg_aux], width=1, linewidth=0.0)
-    ax7[0, 0].set_xlim(0, len(sum_hor))
-    ax7[0, 0].get_xaxis().set_visible(False)
-    ax7[0, 0].set_title("Giving interactions")
+        fig7, ax7 = plt.subplots(2, 2, gridspec_kw={'width_ratios': [7, 1], "height_ratios": [1, 7]}, figsize=(10,10))
+        heatmap = np.sign(heatmap)
+        sum_hor = np.sum(np.abs(heatmap), axis=0)
+        sum_ver = np.sum(np.abs(heatmap), axis=1)
+        sum = sum_hor + sum_ver
+        arg_aux = np.argsort(-sum)
+        g7 = sns.heatmap(heatmap[arg_aux][:, arg_aux], ax=ax7[1, 0], cmap=blah, center=0, annot=False, linewidths=0.0,
+                    mask=mask[arg_aux][:, arg_aux], xticklabels=10, yticklabels=10, cbar=False, cbar_kws={"orientation": "horizontal", "pad":0.05})
 
-    ax7[1, 1].barh(y=np.arange(len(sum_ver)) + 0.5, width=sum_ver[arg_aux], height=1, linewidth=0.0)
-    ax7[1, 1].set_ylim(len(sum_hor), 0)
-    ax7[1, 1].get_yaxis().set_visible(True)
-    ax7[1, 1].tick_params("y", left=False)
-    ax7[1, 1].get_yaxis().set_ticklabels([])
-    ax7[1, 1].tick_params("x", top=True, labeltop=True, bottom=False, labelbottom=False)
-    ax7[1, 1].yaxis.set_label_position("right")
-    ax7[1, 1].set_ylabel("Receiving interactions", rotation=270, labelpad=20)
+        ax7[0, 0].bar(x=np.arange(len(sum_hor))+0.5, height=sum_hor[arg_aux], width=1, linewidth=0.0)
+        ax7[0, 0].set_xlim(0, len(sum_hor))
+        ax7[0, 0].get_xaxis().set_visible(False)
+        ax7[0, 0].set_title("Giving interactions")
 
-    fig7.subplots_adjust(wspace=0.05, hspace=0.05)
+        ax7[1, 1].barh(y=np.arange(len(sum_ver)) + 0.5, width=sum_ver[arg_aux], height=1, linewidth=0.0)
+        ax7[1, 1].set_ylim(len(sum_hor), 0)
+        ax7[1, 1].get_yaxis().set_visible(True)
+        ax7[1, 1].tick_params("y", left=False)
+        ax7[1, 1].get_yaxis().set_ticklabels([])
+        ax7[1, 1].tick_params("x", top=True, labeltop=True, bottom=False, labelbottom=False)
+        ax7[1, 1].yaxis.set_label_position("right")
+        ax7[1, 1].set_ylabel("Receiving interactions", rotation=270, labelpad=20)
 
-    fig7.delaxes(ax7[0,1])
-    #fig7.savefig('heatmap_estimation_ordered.pdf', bbox_inches='tight', format="pdf", quality=90)
+        fig7.subplots_adjust(wspace=0.05, hspace=0.05)
 
-    sns.set_theme()
-    fig3ndiag, ax3ndiag = plt.subplots(2, 1, figsize=(10,8))
-    pos_giv = np.sum(heatmap * (heatmap > 0), axis=0) - (heatmap.diagonal() * (heatmap.diagonal() > 0)) # horizontal
-    pos_rec = np.sum(heatmap * (heatmap > 0), axis=1) - (heatmap.diagonal() * (heatmap.diagonal() > 0)) # vertical
+        fig7.delaxes(ax7[0,1])
+        #fig7.savefig('heatmap_estimation_ordered.pdf', bbox_inches='tight', format="pdf", quality=90)
 
-    neg_giv = np.sum(heatmap * (heatmap < 0), axis=0) - (heatmap.diagonal() * (heatmap.diagonal() < 0))# horizontal
-    neg_rec = np.sum(heatmap * (heatmap < 0), axis=1) - (heatmap.diagonal() * (heatmap.diagonal() < 0))# vertical
-    arg_aux = np.argsort(-(pos_giv - neg_giv))
+        sns.set_theme()
+        fig3ndiag, ax3ndiag = plt.subplots(2, 1, figsize=(10,8))
+        pos_giv = np.sum(heatmap * (heatmap > 0), axis=0) - (heatmap.diagonal() * (heatmap.diagonal() > 0)) # horizontal
+        pos_rec = np.sum(heatmap * (heatmap > 0), axis=1) - (heatmap.diagonal() * (heatmap.diagonal() > 0)) # vertical
 
-    ax3ndiag[0].plot(pos_rec[arg_aux], label="Positive", c="g")
-    ax3ndiag[0].plot(neg_rec[arg_aux], label="Negative", c="r")
-    ax3ndiag[1].plot(pos_giv[arg_aux], label="Positive", c="g")
-    ax3ndiag[1].plot(neg_giv[arg_aux], label="Negative", c="r")
-    ax3ndiag[0].set_title("Receiving interactions")
-    ax3ndiag[1].set_title("Giving interactions")
-    ax3ndiag[0].legend()
-    ax3ndiag[1].legend()
-    print("Receving null ?", np.sum((pos_rec - neg_rec) == 0), np.arange(len(pos_rec))[(pos_rec - neg_rec) == 0])
-    print("Giving null ?", np.sum((pos_giv - neg_giv) == 0), np.arange(len(pos_rec))[(pos_giv - neg_giv) == 0])
-    print("Giving null how many receiving", (pos_rec - neg_rec)[(pos_giv - neg_giv) == 0])
+        neg_giv = np.sum(heatmap * (heatmap < 0), axis=0) - (heatmap.diagonal() * (heatmap.diagonal() < 0))# horizontal
+        neg_rec = np.sum(heatmap * (heatmap < 0), axis=1) - (heatmap.diagonal() * (heatmap.diagonal() < 0))# vertical
+        arg_aux = np.argsort(-(pos_giv - neg_giv))
+
+        ax3ndiag[0].plot(pos_rec[arg_aux], label="Positive", c="g")
+        ax3ndiag[0].plot(neg_rec[arg_aux], label="Negative", c="r")
+        ax3ndiag[1].plot(pos_giv[arg_aux], label="Positive", c="g")
+        ax3ndiag[1].plot(neg_giv[arg_aux], label="Negative", c="r")
+        ax3ndiag[0].set_title("Receiving interactions")
+        ax3ndiag[1].set_title("Giving interactions")
+        ax3ndiag[0].legend()
+        ax3ndiag[1].legend()
+        print("Receving null ?", np.sum((pos_rec - neg_rec) == 0), np.arange(len(pos_rec))[(pos_rec - neg_rec) == 0])
+        print("Giving null ?", np.sum((pos_giv - neg_giv) == 0), np.arange(len(pos_rec))[(pos_giv - neg_giv) == 0])
+        print("Giving null how many receiving", (pos_rec - neg_rec)[(pos_giv - neg_giv) == 0])
 
     plt.tight_layout()
     plt.show()

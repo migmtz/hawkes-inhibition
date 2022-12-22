@@ -36,7 +36,7 @@ if __name__ == "__main__":
     theta = param_dict[number]
     print(theta)
     dim = int(np.sqrt(1 + theta.shape[0]) - 1)
-    number_estimations = 5
+    number_estimations = 25
     max_jumps = 5000
 
     mu = np.array(theta[:dim]).reshape((dim, 1))
@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
     # plot_names = ["", "threshgrad20.0", "tick", "tick_bfgs"]
 
-    plot_names = ["grad", "threshgrad5.0", "threshgrad10.0", "threshgrad15.0", "threshgrad20.0", "threshgrad25.0", "approx", "tick_bfgs", "confidencegrad"]
+    plot_names = ["grad", "threshgrad5.0", "threshgrad10.0", "threshgrad15.0", "threshgrad20.0", "threshgrad25.0", "approx", "tick_bfgs", "confidencegrad", "confminmax"]
     estimations = [obtain_average_estimation(file_name, number, dim, number_estimations) for file_name in plot_names]
 
     #print(estimations)

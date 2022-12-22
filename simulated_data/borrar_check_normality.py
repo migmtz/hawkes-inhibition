@@ -1,34 +1,34 @@
 import csv
 from dictionary_parameters import dictionary as param_dict
 from ast import literal_eval as make_tuple
-from scipy.stats import t
 from scipy.optimize import minimize
 from class_and_func.likelihood_functions import *
+from matplotlib import pyplot as plt
+import scipy.stats
+from scipy.stats import kstest
 
 
 def obtain_confidence_intervals(file_name, number, dim, number_estimations):
     n = 0
     if file_name[0:4] == "tick":
         if file_name[5:9] == "beta":
-            average = np.zeros((dim + dim * dim * dim,))
-            st_dev = np.zeros((dim + dim * dim * dim,))
+            average = np.zeros((number_estimations, dim + dim * dim * dim))
         else:
-            average = np.zeros((dim + dim * dim,))
-            st_dev = np.zeros((dim + dim * dim,))
+            average = np.zeros((number_estimations, dim + dim * dim))
     else:
-        average = np.zeros((2 * dim + dim * dim,))
-        st_dev = np.zeros((2 * dim + dim * dim,))
+        average = np.zeros((number_estimations, 2 * dim + dim * dim))
     with open("estimation_" + str(number) + '_file/_estimation' + str(number) + file_name, 'r') as read_obj:
         csv_reader = csv.reader(read_obj)
         for row in csv_reader:
             if n < number_estimations:
-                average += np.array([float(i) for i in row])
-                st_dev += np.array([float(i) for i in row])**2
+                average[n, :] += np.array([float(i) for i in row])
                 n += 1
-    average /= n
-    st_dev = np.sqrt((st_dev - n*(average**2))/(n-1))
+    if n != number_estimations:
+        print("Wrong number of estimations")
+    full_matrix = average
+    average = np.mean(average, axis=0)
 
-    return average, st_dev, n
+    return average, full_matrix, n
 
 
 class multivariate_estimator_bfgs_conf(object):
@@ -77,7 +77,7 @@ class multivariate_estimator_bfgs_conf(object):
         else:
             self.options = options
 
-    def fit(self, timestamps, support):
+    def fit(self, timestamps, initial, support):
         """
         Parameters
         ----------
@@ -87,6 +87,8 @@ class multivariate_estimator_bfgs_conf(object):
 
         self.options['iprint'] = 0
         #print("loss", self.loss)
+
+        self.initial_guess = initial
 
         support_flat = support.ravel()
 
@@ -109,68 +111,35 @@ class multivariate_estimator_bfgs_conf(object):
 
 
 if __name__ == "__main__":
-    number = 7
+    number = 0
     theta = param_dict[number]
     dim = int(np.sqrt(1 + theta.shape[0]) - 1)
     mu = theta[:dim]
     alpha = theta[dim:-dim].reshape((dim, dim))
     beta = theta[-dim:]
-    number_estimations = 5
-    level_conf = 0.95
+    number_estimations = 100
     annot = False
 
-    avg, st_dev, n = obtain_confidence_intervals("grad", number, dim, number_estimations)
+    avg, full_matrix, n = obtain_confidence_intervals("grad100", number, dim, number_estimations)
 
     print("Number of estimations: ", n)
-    quantile = -t.ppf((1 - level_conf) / 2, n - 1)
-    print(quantile)
 
     mu_avg = avg[:dim]
     alpha_avg = avg[dim:-dim].reshape((dim, dim))
     beta_avg = avg[-dim:]
 
-    mu_dev = quantile * (st_dev[:dim]) / (np.sqrt(n - 1))
-    alpha_dev = quantile * (st_dev[dim:-dim].reshape((dim, dim))) / (np.sqrt(n - 1))
-    beta_dev = quantile * (st_dev[-dim:]) / (np.sqrt(n - 1))
+    aux = full_matrix[:, dim:-dim]
+    print(aux.shape)
 
-    support = np.invert((alpha_avg - alpha_dev < 0) & (0 < alpha_avg + alpha_dev))
+    fig, ax = plt.subplots(dim, dim)
+    for i in range(dim*dim):
+        ax[i//dim, i%dim].hist(aux[:, i])
+        ax[i // dim, i % dim].plot([0, 0], [0, 25])
 
-    print("Support matrix: ", support)
-
-    first = 1
-    before = 1
-    until = 5
-
-    with open("estimation_" + str(number) + '_file/_simulation' + str(number), 'r') as read_obj:
-        csv_reader = csv.reader(read_obj)
-        with open("estimation_" + str(number) + '_file/_estimation' + str(number) + 'conf5interval', 'w', newline='') as myfile:
-            i = 1
-            wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-            for row in csv_reader:
-                while i <= first:
-                    print("# ", i)
-                    tList = [make_tuple(i) for i in row]
-
-                    loglikelihood_estimation = multivariate_estimator_bfgs_conf(dimension=dim, options={"disp": False})
-                    res = loglikelihood_estimation.fit(tList, support=support)
-                    # print(loglikelihood_estimation.res.x)
-                    wr.writerow(loglikelihood_estimation.res.x.tolist())
-                    i += 1
-
-    with open("estimation_" + str(number) + '_file/_simulation' + str(number), 'r') as read_obj:
-        csv_reader = csv.reader(read_obj)
-        with open("estimation_" + str(number) + '_file/_estimation' + str(number) + 'conf5interval', 'a', newline='') as myfile:
-            i = 1
-            wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-            for row in csv_reader:
-                if i <= before:
-                    i += 1
-                elif before < i <= until:
-                    print("# ", i)
-                    tList = [make_tuple(i) for i in row]
-
-                    loglikelihood_estimation = multivariate_estimator_bfgs_conf(dimension=dim, options={"disp": False})
-                    res = loglikelihood_estimation.fit(tList, support=support)
-                    # print(loglikelihood_estimation.res.x)
-                    wr.writerow(loglikelihood_estimation.res.x.tolist())
-                    i += 1
+    fig2, ax2 = plt.subplots(dim, dim)
+    for i in range(dim * dim):
+        scipy.stats.probplot(aux[:, i], dist="norm", plot=ax2[i // dim, i % dim])
+        print(kstest((aux[:, i] - np.mean(aux[:, i]))/np.std(aux[:, i]), "norm"))
+        blah = np.random.poisson(1, 100)
+        print(kstest((blah - np.mean(blah)) / np.std(blah), "norm"))
+    plt.show()

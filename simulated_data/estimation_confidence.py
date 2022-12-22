@@ -1,7 +1,6 @@
 import csv
 from dictionary_parameters import dictionary as param_dict
 from ast import literal_eval as make_tuple
-from scipy.stats import t
 from scipy.optimize import minimize
 from class_and_func.likelihood_functions import *
 
@@ -10,25 +9,24 @@ def obtain_confidence_intervals(file_name, number, dim, number_estimations):
     n = 0
     if file_name[0:4] == "tick":
         if file_name[5:9] == "beta":
-            average = np.zeros((dim + dim * dim * dim,))
-            st_dev = np.zeros((dim + dim * dim * dim,))
+            average = np.zeros((number_estimations, dim + dim * dim * dim))
         else:
-            average = np.zeros((dim + dim * dim,))
-            st_dev = np.zeros((dim + dim * dim,))
+            average = np.zeros((number_estimations, dim + dim * dim))
     else:
-        average = np.zeros((2 * dim + dim * dim,))
-        st_dev = np.zeros((2 * dim + dim * dim,))
+        average = np.zeros((number_estimations, 2 * dim + dim * dim))
     with open("estimation_" + str(number) + '_file/_estimation' + str(number) + file_name, 'r') as read_obj:
         csv_reader = csv.reader(read_obj)
         for row in csv_reader:
             if n < number_estimations:
-                average += np.array([float(i) for i in row])
-                st_dev += np.array([float(i) for i in row])**2
+                average[n, :] += np.array([float(i) for i in row])
                 n += 1
-    average /= n
-    st_dev = np.sqrt((st_dev - n*(average**2))/(n-1))
+    if n != number_estimations:
+        print("Wrong number of estimations")
+    minimum = np.min(average, axis=0)
+    maximum = np.max(average, axis=0)
+    average = np.mean(average, axis=0)
 
-    return average, st_dev, n
+    return average, minimum, maximum, n
 
 
 class multivariate_estimator_bfgs_conf(object):
@@ -116,24 +114,20 @@ if __name__ == "__main__":
     alpha = theta[dim:-dim].reshape((dim, dim))
     beta = theta[-dim:]
     number_estimations = 5
-    level_conf = 0.95
     annot = False
 
-    avg, st_dev, n = obtain_confidence_intervals("grad", number, dim, number_estimations)
+    avg, minimum, maximum, n = obtain_confidence_intervals("grad", number, dim, number_estimations)
 
     print("Number of estimations: ", n)
-    quantile = -t.ppf((1 - level_conf) / 2, n - 1)
-    print(quantile)
 
     mu_avg = avg[:dim]
     alpha_avg = avg[dim:-dim].reshape((dim, dim))
     beta_avg = avg[-dim:]
 
-    mu_dev = quantile * (st_dev[:dim]) / (np.sqrt(n - 1))
-    alpha_dev = quantile * (st_dev[dim:-dim].reshape((dim, dim))) / (np.sqrt(n - 1))
-    beta_dev = quantile * (st_dev[-dim:]) / (np.sqrt(n - 1))
+    alpha_min = minimum[dim:-dim].reshape((dim, dim))
+    alpha_max = maximum[dim:-dim].reshape((dim, dim))
 
-    support = np.invert((alpha_avg - alpha_dev < 0) & (0 < alpha_avg + alpha_dev))
+    support = (alpha_min > 0) | (alpha_max < 0)
 
     print("Support matrix: ", support)
 
@@ -143,7 +137,7 @@ if __name__ == "__main__":
 
     with open("estimation_" + str(number) + '_file/_simulation' + str(number), 'r') as read_obj:
         csv_reader = csv.reader(read_obj)
-        with open("estimation_" + str(number) + '_file/_estimation' + str(number) + 'conf5interval', 'w', newline='') as myfile:
+        with open("sample_" + str(number_estimations) + "/estimation_" + str(number) + '_file/_estimation' + str(number) + 'confminmax', 'w', newline='') as myfile:
             i = 1
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
             for row in csv_reader:
@@ -151,7 +145,7 @@ if __name__ == "__main__":
                     print("# ", i)
                     tList = [make_tuple(i) for i in row]
 
-                    loglikelihood_estimation = multivariate_estimator_bfgs_conf(dimension=dim, options={"disp": False})
+                    loglikelihood_estimation = multivariate_estimator_bfgs_conf(dimension=dim, initial_guess="random", options={"disp": False})
                     res = loglikelihood_estimation.fit(tList, support=support)
                     # print(loglikelihood_estimation.res.x)
                     wr.writerow(loglikelihood_estimation.res.x.tolist())
@@ -159,7 +153,7 @@ if __name__ == "__main__":
 
     with open("estimation_" + str(number) + '_file/_simulation' + str(number), 'r') as read_obj:
         csv_reader = csv.reader(read_obj)
-        with open("estimation_" + str(number) + '_file/_estimation' + str(number) + 'conf5interval', 'a', newline='') as myfile:
+        with open("sample_" + str(number_estimations) + "/estimation_" + str(number) + '_file/_estimation' + str(number) + 'confminmax', 'a', newline='') as myfile:
             i = 1
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
             for row in csv_reader:
@@ -169,7 +163,7 @@ if __name__ == "__main__":
                     print("# ", i)
                     tList = [make_tuple(i) for i in row]
 
-                    loglikelihood_estimation = multivariate_estimator_bfgs_conf(dimension=dim, options={"disp": False})
+                    loglikelihood_estimation = multivariate_estimator_bfgs_conf(dimension=dim, initial_guess="random", options={"disp": False})
                     res = loglikelihood_estimation.fit(tList, support=support)
                     # print(loglikelihood_estimation.res.x)
                     wr.writerow(loglikelihood_estimation.res.x.tolist())
