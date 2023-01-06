@@ -18,14 +18,24 @@ def obtain_average_estimation(file_name, number, dim, number_estimations):
             result = np.zeros((dim + dim * dim,))
     else:
         result = np.zeros((2 * dim + dim * dim,))
-    with open("estimation_"+str(number)+'_file/_estimation'+str(number)+file_name, 'r') as read_obj:
-        csv_reader = csv.reader(read_obj)
-        for row in csv_reader:
-            if n < number_estimations:
-                result += np.array([float(i) for i in row])
-                n += 1
+
+    if file_name[0:4] == "conf":
+        with open("sample_" + str(number_estimations) + "/estimation_" + str(number) + '_file/_estimation' + str(number) + file_name, 'r') as read_obj:
+            print(file_name)
+            csv_reader = csv.reader(read_obj)
+            for row in csv_reader:
+                if n < number_estimations:
+                    result += np.array([float(i) for i in row])
+                    n += 1
+    else:
+        with open("estimation_"+str(number)+'_file/_estimation'+str(number)+file_name, 'r') as read_obj:
+            csv_reader = csv.reader(read_obj)
+            for row in csv_reader:
+                if n < number_estimations:
+                    result += np.array([float(i) for i in row])
+                    n += 1
     result /= n
-    print(n)
+    print(file_name, n)
 
     return result
 
@@ -37,19 +47,19 @@ if __name__ == "__main__":
     mu = theta[:dim]
     alpha = theta[dim:-dim].reshape((dim, dim))
     beta = theta[-dim:]
-    number_estimations = 5
+    number_estimations = 25
     annot = False
 
     # plot_names = ["grad", "threshgrad25.0", "approx", "tick_bfgs"]
     # labels = ["MLE", "MLE-$0.25$", "Approx", "Lst-sq"]
-    plot_names = ["grad", "threshgrad25.0", "conf5", "conf5interval"]
-    labels = ["MLE", "MLE-$0.25$", "Confid", "Lst-sq"]
+    plot_names = ["grad", "threshgrad30.0", "confinterval", "confminmax", "approx", "tick_bfgs"]
+    labels = ["MLE", "MLE-$0.30$", "ConfInterval", "ConfMM", "Approx", "Lst-sq"]
     estimations = [obtain_average_estimation(file_name, number, dim, number_estimations) for file_name in plot_names]
 
     sns.set_theme()
     fig_or, ax_or = plt.subplots()
     plt.tight_layout()
-    fig, axr = plt.subplots(2, len(plot_names))
+    fig, axr = plt.subplots(2, len(plot_names), figsize=(18, 5))
     ax = axr.T
     hex_list = ['#FF3333', '#FFFFFF', '#33FF49']
 
@@ -93,6 +103,9 @@ if __name__ == "__main__":
 
         g = sns.heatmap(heat_estimated, ax=ax[ref][0], cmap=get_continuous_cmap(hex_list), center=0, annot=annot, linewidths=.5, xticklabels=range(1,dim+1), yticklabels=range(1,dim+1))
         g.set_xticklabels(g.get_xticklabels(), rotation=0)
+        g.set_xticklabels([])
+        if ref > 0:
+            g.set_yticklabels([])
         ax[ref][0].set_title(labels[ref])
 
         # aux = sign * np.abs(np.abs(np.sign(heat_matrix)) - np.abs(np.sign(heat_estimated)))
@@ -108,8 +121,10 @@ if __name__ == "__main__":
         aux[(heat_estimated == 0.0) * (heat_matrix != 0.0)] = -1
         g = sns.heatmap(aux, ax=ax[ref][1], cmap=get_continuous_cmap(['#000000', '#9B59B6', '#FFFFFF', '#E67E22']), annot=annot, linewidths=.5, vmin=-2, vmax=1, xticklabels=range(1,dim+1), yticklabels=range(1,dim+1))
         g.set_xticklabels(g.get_xticklabels(), rotation=0)
+        if ref > 0:
+            g.set_yticklabels([])
         # ax[ref][1].set_title(str(np.round(false_0, 2)) + " " + str(np.round(false_non_0, 2)))
 
     #plt.tight_layout()
-
+    fig.savefig('heatmap_hori.pdf', bbox_inches='tight', format="pdf", quality=90)
     plt.show()

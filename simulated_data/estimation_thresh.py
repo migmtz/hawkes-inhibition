@@ -120,52 +120,54 @@ class multivariate_estimator_bfgs_non_penalized(object):
 
 if __name__ == "__main__":
     np.random.seed(0)
-    number = 9
+    number = 7
     theta = param_dict[number]
     dim = int(np.sqrt(1 + theta.shape[0]) - 1)
 
     file_name = "grad"
 
-    threshold = 0.03
+    for threshold in [0.15, 0.20, 0.25, 0.30, 0.35]:
+        np.random.seed(0)
+        #threshold = 0.10
 
-    with open("estimation_"+str(number)+'_file/_estimation'+str(number)+file_name, 'r') as read_obj:
-        csv_reader = csv.reader(read_obj)
-        for z, row in enumerate(csv_reader):
-            result = np.array([float(i) for i in row])
-            print("z", z)
-            if z==0:
-                with open("estimation_" + str(number) + '_file/_simulation' + str(number), 'r') as read_obj:
-                    csv_reader = csv.reader(read_obj)
-                    with open("estimation_" + str(number) + '_file/_estimation' + str(number) + 'threshgrad'+str(threshold*100), 'w', newline='') as myfile:
-                        i = 1
-                        wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-                        for row in csv_reader:
-                            if i <= 1:
-                                print("# ", i)
-                                tList = [make_tuple(i) for i in row]
-
-                                loglikelihood_estimation_pen = multivariate_estimator_bfgs_non_penalized(dimension=dim,
-                                                                                           options={"disp": False})
-                                res = loglikelihood_estimation_pen.fit(tList, initial=result, threshold=threshold)
-                                print(loglikelihood_estimation_pen.res.x)
-                                wr.writerow(loglikelihood_estimation_pen.res.x.tolist())
-                                i += 1
-                            else:
-                                break
-            else:
-                with open("estimation_"+str(number)+'_file/_simulation'+str(number), 'r') as read_obj:
-                    csv_reader = csv.reader(read_obj)
-                    with open("estimation_"+str(number)+'_file/_estimation'+str(number)+'threshgrad'+str(threshold*100), 'a', newline='') as myfile:
-                        wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-                        for i, row in enumerate(csv_reader):
-                            if z == i:
-                                print("# ", i+1)
-                                tList = [make_tuple(i) for i in row]
-                                # print(stop_criteria)
-                                loglikelihood_estimation_pen = multivariate_estimator_bfgs_non_penalized(dimension=dim,
-                                                                                                         options={"disp": False})
-                                res = loglikelihood_estimation_pen.fit(tList, initial=result, threshold=threshold)
-                                print(loglikelihood_estimation_pen.res.x)
-                                wr.writerow(loglikelihood_estimation_pen.res.x.tolist())
-                                #i += 1
+        with open("estimation_"+str(number)+'_file/_estimation'+str(number)+file_name, 'r') as read_obj:
+            csv_reader = csv.reader(read_obj)
+            for z, row in enumerate(csv_reader):
+                result = np.array([float(i) for i in row])
+                print("z", z)
+                # if z==0:
+                #     with open("estimation_" + str(number) + '_file/_simulation' + str(number), 'r') as read_obj:
+                #         csv_reader = csv.reader(read_obj)
+                #         with open("estimation_" + str(number) + '_file/_estimation' + str(number) + 'threshgrad'+str(threshold*100), 'w', newline='') as myfile:
+                #             i = 1
+                #             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+                #             for row in csv_reader:
+                #                 if i <= 1:
+                #                     print("# ", i)
+                #                     tList = [make_tuple(i) for i in row]
+                #
+                #                     loglikelihood_estimation_pen = multivariate_estimator_bfgs_non_penalized(dimension=dim,
+                #                                                                                options={"disp": False})
+                #                     res = loglikelihood_estimation_pen.fit(tList, initial=result, threshold=threshold)
+                #                     print(loglikelihood_estimation_pen.res.x)
+                #                     wr.writerow(loglikelihood_estimation_pen.res.x.tolist())
+                #                     i += 1
+                #                 else:
+                #                     break
+                if z >= 5:
+                    with open("estimation_"+str(number)+'_file/_simulation'+str(number), 'r') as read_obj:
+                        csv_reader = csv.reader(read_obj)
+                        with open("estimation_"+str(number)+'_file/_estimation'+str(number)+'threshgrad'+str(threshold*100), 'a', newline='') as myfile:
+                            wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+                            for i, row in enumerate(csv_reader):
+                                if z == i:
+                                    print("# ", i+1)
+                                    tList = [make_tuple(i) for i in row]
+                                    # print(stop_criteria)
+                                    loglikelihood_estimation_pen = multivariate_estimator_bfgs_non_penalized(dimension=dim,
+                                                                                                             options={"disp": False})
+                                    res = loglikelihood_estimation_pen.fit(tList, initial=result, threshold=threshold)
+                                    print(loglikelihood_estimation_pen.res.x)
+                                    wr.writerow(loglikelihood_estimation_pen.res.x.tolist())
+                                    #i += 1
 

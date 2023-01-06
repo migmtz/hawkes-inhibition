@@ -10,7 +10,7 @@ from metrics import relative_squared_loss
 # 3rd and 4th contain dim + dim**3
 
 if __name__ == "__main__":
-    number = 9
+    number = 7
     theta = param_dict[number]
     dim = int(np.sqrt(1 + theta.shape[0]) - 1)
     beta = theta[-dim:].reshape((dim,1)) + 1e-16

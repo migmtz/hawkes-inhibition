@@ -106,6 +106,7 @@ if __name__ == "__main__":
     heatmap2 = np.sign(alpha[estimated_mask[0], :][:, estimated_mask[0]])/(beta[estimated_mask[0], :])
 
     fig, ax = plt.subplots(figsize=(10, 12))
+    print(np.sum(np.abs(heatmap_beta) > 0))
     g = sns.heatmap(heatmap_beta, ax=ax, cmap=blah, center=0, annot=False, linewidths=0.0, mask=mask, xticklabels=10, yticklabels=10, square=True)
     g.set_xticklabels(range(1, np.sum(estimated_mask), 10), rotation=0)
     g.set_yticklabels(range(1, np.sum(estimated_mask), 10), rotation=90)
@@ -175,4 +176,5 @@ if __name__ == "__main__":
         print("Giving null how many receiving", (pos_rec - neg_rec)[(pos_giv - neg_giv) == 0])
 
     plt.tight_layout()
+    figalt.savefig('heatmap_real_minmax.pdf', bbox_inches='tight', format="pdf", quality=90)
     plt.show()

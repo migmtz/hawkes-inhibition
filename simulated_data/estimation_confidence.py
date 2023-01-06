@@ -92,6 +92,7 @@ class multivariate_estimator_bfgs_conf(object):
                                                                   for i in support_flat] + [
                           (1e-12, None) for i in range(self.dim)]
 
+        np.random.seed(0)
         self.res = minimize(self.loss, self.initial_guess, method="L-BFGS-B", jac=self.grad,
                             args=(timestamps, self.dim), bounds=self.bounds,
                             options=self.options)
@@ -107,13 +108,15 @@ class multivariate_estimator_bfgs_conf(object):
 
 
 if __name__ == "__main__":
-    number = 7
+    np.random.seed(0)
+
+    number = 1
     theta = param_dict[number]
     dim = int(np.sqrt(1 + theta.shape[0]) - 1)
     mu = theta[:dim]
     alpha = theta[dim:-dim].reshape((dim, dim))
     beta = theta[-dim:]
-    number_estimations = 5
+    number_estimations = 25
     annot = False
 
     avg, minimum, maximum, n = obtain_confidence_intervals("grad", number, dim, number_estimations)
@@ -133,7 +136,7 @@ if __name__ == "__main__":
 
     first = 1
     before = 1
-    until = 5
+    until = 25
 
     with open("estimation_" + str(number) + '_file/_simulation' + str(number), 'r') as read_obj:
         csv_reader = csv.reader(read_obj)

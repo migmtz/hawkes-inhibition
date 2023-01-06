@@ -70,10 +70,11 @@ def obtain_average_estimation(directory, file_name, number_tot):
 
 
 if __name__ == "__main__":
+
     np.random.seed(1)
-    plot_names = [("estimation/_traitements2_", "grad"), ("estimation/_traitements2_", "threshgrad90.0"),  ("estimation/_traitements2_", "diag"), ("estimation_resamples/_resamples_", "grad"), ("estimation_resamples/_resamples_", "intervalgrad"), ("estimation_resamples/_resamples_", "minmax")]
-    labels = ["MLE", "MLE-0.90", "Diag", "resampled-MLE", "resampled-interval", "MinMax"]
-    numbers = [11, 11, 11, 21, 21, 21]
+    plot_names = [("estimation/_traitements2_", "grad"), ("estimation/_traitements2_", "threshgrad20.0"), ("estimation/_traitements2_", "threshgrad40.0"), ("estimation/_traitements2_", "threshgrad60.0"), ("estimation/_traitements2_", "threshgrad90.0"), ("estimation/_traitements2_", "threshgrad95.0"), ("estimation_resamples/_resamples_", "grad"), ("estimation_resamples/_resamples_", "intervalgrad"), ("estimation_resamples/_resamples_", "minmax"),  ("estimation/_traitements2_", "diag")]
+    labels = ["MLE", "MLE-0.20", "MLE-0.40", "MLE-0.60", "MLE-0.90", "MLE-0.95", "resampled-MLE", "CfStd", "CfQuant", "Diag"]
+    numbers = [11, 11, 11, 11, 11, 11, 21, 21, 21, 11]
 
     estimations = []
 
@@ -138,8 +139,13 @@ if __name__ == "__main__":
 
         a = p_values.reshape((1, len(p_values)))
         print(" \\\\\n".join([" & ".join(map(str, line)) for line in a]))
-
-        sc = ax.scatter([i for i in range(len(p_values))], np.sort(p_values), label=label, s=28)
+        if file_name[0:4] == "thre":
+            marker = "^"
+        elif file_name[0:2] == "Cf":
+            marker = "+"
+        else:
+            marker = "."
+        sc = ax.scatter([i for i in range(len(p_values))], np.sort(p_values), marker=marker, label=label, s=28)
         argsort = np.argsort(p_values)
         ax.scatter([[np.argmax(argsort)]], [p_values[-1]], c=sc.get_edgecolor(), marker="X", s=256, edgecolors="k")
 

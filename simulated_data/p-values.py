@@ -8,6 +8,8 @@ from dictionary_parameters import dictionary as param_dict
 from time_change import time_change
 from scipy.stats import kstest
 
+import os
+
 
 def obtain_average_estimation(file_name, number, dim, number_estimations):
     n = 0
@@ -18,12 +20,21 @@ def obtain_average_estimation(file_name, number, dim, number_estimations):
             result = np.zeros((dim + dim * dim,))
     else:
         result = np.zeros((2 * dim + dim * dim,))
-    with open("estimation_"+str(number)+'_file/_estimation'+str(number)+file_name, 'r') as read_obj:
-        csv_reader = csv.reader(read_obj)
-        for row in csv_reader:
-            if n < number_estimations:
-                result += np.array([float(i) for i in row])
-                n += 1
+    if file_name[0:4] == "conf":
+        with open("sample_" + str(number_estimations) + "/estimation_" + str(number) + '_file/_estimation' + str(number) + file_name, 'r') as read_obj:
+            print(file_name)
+            csv_reader = csv.reader(read_obj)
+            for row in csv_reader:
+                if n < number_estimations:
+                    result += np.array([float(i) for i in row])
+                    n += 1
+    else:
+        with open("estimation_"+str(number)+'_file/_estimation'+str(number)+file_name, 'r') as read_obj:
+            csv_reader = csv.reader(read_obj)
+            for row in csv_reader:
+                if n < number_estimations:
+                    result += np.array([float(i) for i in row])
+                    n += 1
     result /= n
 
     return result
@@ -31,7 +42,7 @@ def obtain_average_estimation(file_name, number, dim, number_estimations):
 
 if __name__ == "__main__":
 
-    number = 7
+    number = 0
     print("Estimation number ", str(number))
     theta = param_dict[number]
     print(theta)
@@ -45,7 +56,12 @@ if __name__ == "__main__":
 
     # plot_names = ["", "threshgrad20.0", "tick", "tick_bfgs"]
 
-    plot_names = ["grad", "threshgrad5.0", "threshgrad10.0", "threshgrad15.0", "threshgrad20.0", "threshgrad25.0", "approx", "tick_bfgs", "confidencegrad", "confminmax"]
+    #plot_names = ["grad", "threshgrad5.0", "threshgrad10.0", "threshgrad15.0", "threshgrad20.0", "threshgrad25.0", "approx", "tick_bfgs", "confinterval", "confminmax"]
+    plot_names = ["grad"]
+    aux = [float(i.partition("threshgrad")[2]) for i in os.listdir("estimation_"+str(number)+"_file") if i.startswith("_estimation"+str(number)+"threshgrad")]
+    aux.sort()
+    plot_names += ["threshgrad" + str(i) for i in aux]
+    plot_names += ["approx", "tick_bfgs", "confinterval", "confminmax"]
     estimations = [obtain_average_estimation(file_name, number, dim, number_estimations) for file_name in plot_names]
 
     #print(estimations)

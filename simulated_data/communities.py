@@ -118,7 +118,8 @@ if __name__ == "__main__":
             G.add_edge(i+1, j+1, weight=np.abs(aux), intensity=aux)
 
     np.random.seed(5)
-    pos = nx.spiral_layout(G)
+    pos = nx.kamada_kawai_layout(G)
+    pos = {1: np.array([0, 0]), 2: np.array([1, 0]), 3: np.array([0.5, -0.5]), 4: np.array([0, -1]), 5: np.array([1, -1]), 6: np.array([0.5, -1.5]), 7: np.array([0, -2]), 8: np.array([1, -2]), 9: np.array([0.5, -2.5]), 10: np.array([0.5, -3])}
     #nx.draw(G, with_labels=True)
     np.random.seed(5)
     sns.set_theme()
@@ -154,6 +155,6 @@ if __name__ == "__main__":
     extra = nx.draw_networkx_edges(G, pos, width=1, node_size=100, edgelist=others, edge_color="k", arrowsize=3,
                                    alpha=0.01, ax=ax)
 
-    plt.savefig("communities_d10.pdf", format="pdf")
+    #plt.savefig("communities_d10.pdf", format="pdf")
 
     plt.show()

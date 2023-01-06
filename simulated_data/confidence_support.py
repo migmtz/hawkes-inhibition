@@ -93,7 +93,7 @@ class multivariate_estimator_bfgs_conf(object):
         self.bounds = [(1e-12, None) for i in range(self.dim)] + [(None, None) if i else (0, 1e-16)
                                                                   for i in support_flat] + [
                           (1e-12, None) for i in range(self.dim)]
-
+        np.random.seed(0)
         self.res = minimize(self.loss, self.initial_guess, method="L-BFGS-B", jac=self.grad,
                             args=(timestamps, self.dim), bounds=self.bounds,
                             options=self.options)
@@ -109,13 +109,13 @@ class multivariate_estimator_bfgs_conf(object):
 
 
 if __name__ == "__main__":
-    number = 7
+    number = 9
     theta = param_dict[number]
     dim = int(np.sqrt(1 + theta.shape[0]) - 1)
     mu = theta[:dim]
     alpha = theta[dim:-dim].reshape((dim, dim))
     beta = theta[-dim:]
-    number_estimations = 5
+    number_estimations = 25
     level_conf = 0.95
     annot = False
 
@@ -137,29 +137,30 @@ if __name__ == "__main__":
 
     print("Support matrix: ", support)
 
-    first = 1
+    first = True
     before = 1
-    until = 5
+    until = 25
+
+    if first:
+        with open("estimation_" + str(number) + '_file/_simulation' + str(number), 'r') as read_obj:
+            csv_reader = csv.reader(read_obj)
+            with open("sample_" + str(number_estimations) + "/estimation_" + str(number) + '_file/_estimation' + str(number) + 'confinterval', 'w', newline='') as myfile:
+                i = 1
+                wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+                for row in csv_reader:
+                    while i <= 1:
+                        print("# ", i)
+                        tList = [make_tuple(i) for i in row]
+
+                        loglikelihood_estimation = multivariate_estimator_bfgs_conf(dimension=dim, options={"disp": False})
+                        res = loglikelihood_estimation.fit(tList, support=support)
+                        # print(loglikelihood_estimation.res.x)
+                        wr.writerow(loglikelihood_estimation.res.x.tolist())
+                        i += 1
 
     with open("estimation_" + str(number) + '_file/_simulation' + str(number), 'r') as read_obj:
         csv_reader = csv.reader(read_obj)
-        with open("estimation_" + str(number) + '_file/_estimation' + str(number) + 'conf5interval', 'w', newline='') as myfile:
-            i = 1
-            wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-            for row in csv_reader:
-                while i <= first:
-                    print("# ", i)
-                    tList = [make_tuple(i) for i in row]
-
-                    loglikelihood_estimation = multivariate_estimator_bfgs_conf(dimension=dim, options={"disp": False})
-                    res = loglikelihood_estimation.fit(tList, support=support)
-                    # print(loglikelihood_estimation.res.x)
-                    wr.writerow(loglikelihood_estimation.res.x.tolist())
-                    i += 1
-
-    with open("estimation_" + str(number) + '_file/_simulation' + str(number), 'r') as read_obj:
-        csv_reader = csv.reader(read_obj)
-        with open("estimation_" + str(number) + '_file/_estimation' + str(number) + 'conf5interval', 'a', newline='') as myfile:
+        with open("sample_" + str(number_estimations) + "/estimation_" + str(number) + '_file/_estimation' + str(number) + 'confinterval', 'a', newline='') as myfile:
             i = 1
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
             for row in csv_reader:

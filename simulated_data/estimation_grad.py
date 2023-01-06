@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     first = 1
     before = 1
-    until = 100
+    until = 25
 
     with open("estimation_"+str(number)+'_file/_simulation'+str(number), 'r') as read_obj:
         csv_reader = csv.reader(read_obj)

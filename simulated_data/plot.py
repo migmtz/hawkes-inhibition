@@ -17,32 +17,42 @@ def obtain_average_estimation(file_name, number, dim, number_estimations):
             result = np.zeros((dim + dim * dim,))
     else:
         result = np.zeros((2 * dim + dim * dim,))
-    with open("estimation_"+str(number)+'_file/_estimation'+str(number)+file_name, 'r') as read_obj:
-        csv_reader = csv.reader(read_obj)
-        for row in csv_reader:
-            if n < number_estimations:
-                result += np.array([float(i) for i in row])
-                if file_name[5:9] == "beta":
-                    print(result)
-                n += 1
+
+    if file_name[0:4] == "conf":
+        with open("sample_" + str(number_estimations) + "/estimation_" + str(number) + '_file/_estimation' + str(number) + file_name, 'r') as read_obj:
+            print(file_name)
+            csv_reader = csv.reader(read_obj)
+            for row in csv_reader:
+                if n < number_estimations:
+                    result += np.array([float(i) for i in row])
+                    n += 1
+    else:
+        with open("estimation_"+str(number)+'_file/_estimation'+str(number)+file_name, 'r') as read_obj:
+            csv_reader = csv.reader(read_obj)
+            for row in csv_reader:
+                if n < number_estimations:
+                    result += np.array([float(i) for i in row])
+                    if file_name[5:9] == "beta":
+                        print(result)
+                    n += 1
     result /= n
 
     return result
 
 
-dict_names = {"":0, "grad":0, "threshgrad3.0":1, "threshgrad5.0":1, "threshgrad10.0":1, "tick":2, "tick_bfgs":3, "tick_beta":4, "tick_beta_bfgs":5, "approx":2}
-styles = ["solid", "dashdot", "dashed", "dashed", "dotted", "dotted"]
-colors = ["orange", "orange", "g", "b", "g", "b"]
+dict_names = {"":0, "grad":0, "threshgrad3.0":1, "threshgrad5.0":1, "threshgrad10.0":1, "tick":2, "tick_bfgs":3, "tick_beta":4, "tick_beta_bfgs":5, "approx":2, "confinterval":6, "confminmax":7}
+styles = ["solid", "dashdot", "dashed", "dashed", "dotted", "dotted", "dashed", "dotted"]
+colors = ["orange", "orange", "g", "b", "g", "b", "r", "r"]
 
 
 if __name__ == "__main__":
-    number = 0
+    number = 9
     theta = param_dict[number]
     dim = int(np.sqrt(1 + theta.shape[0]) - 1)
     number_estimations = 25
 
-    plot_names = ["grad", "threshgrad10.0", "approx", "tick_bfgs", "tick_beta_bfgs"]
-    labels = ["MLE", "MLE-0.10", "Approx", "Lst-sq", "Grid-lst-sq"]
+    plot_names = ["grad", "threshgrad3.0", "confinterval", "confminmax", "approx", "tick_bfgs", "tick_beta_bfgs"]
+    labels = ["MLE", "MLE-0.03", "ConfInt", "ConfMM", "Approx", "Lst-sq", "Grid-lst-sq"]
     estimations = []
 
     for file_name in plot_names:
@@ -57,7 +67,7 @@ if __name__ == "__main__":
     sns.set_theme()
     plt.rcParams.update({'font.size': 24})
 
-    fig, ax = plt.subplots(dim, dim, figsize=(12, 7))
+    fig, ax = plt.subplots(dim, dim, figsize=(14, 8))
 
     x = np.linspace(0, 1, 100)
     x_real = np.linspace(-0.05, 1.05, 102)
@@ -84,6 +94,6 @@ if __name__ == "__main__":
                     # print(dim + dim * i + j)
                     ax[i, j].plot(x, estimation[dim + dim * i + j] * np.exp(-estimation[dim + dim * dim + i] * x), c=colors[dict_names[plot_names[ref]]], linestyle=styles[dict_names[plot_names[ref]]],label=labels[ref], alpha=0.5)
     plt.legend()
-    plt.savefig('reconstruction_param_1.pdf', bbox_inches='tight', format="pdf", quality=90)
+    plt.savefig('reconstruction_param_3.pdf', bbox_inches='tight', format="pdf", quality=90)
 
     plt.show()

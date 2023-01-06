@@ -390,6 +390,7 @@ class multivariate_estimator_bfgs_grad(object):
         """
 
         if self.penalty != "rlsquares":
+            np.random.seed(0)
             self.res = minimize(self.loss, self.initial_guess, method="L-BFGS-B", jac=self.grad,
                                 args=(timestamps, self.dim), bounds=self.bounds,
                                 options=self.options)

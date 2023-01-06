@@ -13,22 +13,34 @@ def obtain_average_error(file_name, number, dim, number_estimations, theta):
     n = 0
     result = np.zeros((number_estimations, 4))
 
-    with open("estimation_"+str(number)+'_file/_estimation'+str(number)+file_name, 'r') as read_obj:
-        csv_reader = csv.reader(read_obj)
-        for row in csv_reader:
-            if n < number_estimations:
-                theta_estimated = np.array([float(i) for i in row])
-                if file_name[0:4] == "tick":
-                    theta_estimated = np.concatenate((theta_estimated, theta[-dim:]))
-                result[n, :] = np.array(relative_squared_loss(theta, theta_estimated))
-                n += 1
+    if file_name[0:4] == "conf":
+        with open("sample_" + str(number_estimations) + "/estimation_" + str(number) + '_file/_estimation' + str(number) + file_name, 'r') as read_obj:
+            print(file_name)
+            csv_reader = csv.reader(read_obj)
+            for row in csv_reader:
+                if n < number_estimations:
+                    theta_estimated = np.array([float(i) for i in row])
+                    result[n, :] = np.array(relative_squared_loss(theta, theta_estimated))
+                    n += 1
+
+    else:
+
+        with open("estimation_"+str(number)+'_file/_estimation'+str(number)+file_name, 'r') as read_obj:
+            csv_reader = csv.reader(read_obj)
+            for row in csv_reader:
+                if n < number_estimations:
+                    theta_estimated = np.array([float(i) for i in row])
+                    if file_name[0:4] == "tick":
+                        theta_estimated = np.concatenate((theta_estimated, theta[-dim:]))
+                    result[n, :] = np.array(relative_squared_loss(theta, theta_estimated))
+                    n += 1
 
     return result
 
 
-colors = ["orange", "orange", "g", "b", "g", "b"]
+colors = ["orange", "orange", "r", "r", "g", "b"]
 text = ["$\mu^i$", "$\\alpha_{ij}$", "$\\beta_i$", "Total"]
-hatches = ["", "///", "", ""]
+hatches = ["", "///", "", "///", "", ""]
 
 
 if __name__ == "__main__":
@@ -36,14 +48,14 @@ if __name__ == "__main__":
     number_grid = [0,1,9]
     number_estimations = 25
 
-    plot_names = ["grad", "threshgrad", "approx", "tick_bfgs"]#, "tick_beta", "tick_beta_bfgs"]
+    plot_names = ["grad", "threshgrad", "confinterval", "confminmax", "approx", "tick_bfgs"]#, "tick_beta", "tick_beta_bfgs"]
     numbers_thresh = [10.0, 5.0, 3.0]
-    labels = [["MLE", "MLE-0.10", "Approx", "Lst-sq"]]
-    labels += [["MLE", "MLE-0.05", "Approx", "Lst-sq"]]
-    labels += [["MLE", "MLE-0.03", "Approx", "Lst-sq"]]
+    labels = [["MLE", "MLE-0.10", "CfStd", "CfQuant", "Approx", "Lst-sq"]]
+    labels += [["MLE", "MLE-0.05", "CfStd", "CfQuant", "Approx", "Lst-sq"]]
+    labels += [["MLE", "MLE-0.03", "CfStd", "CfQuant", "Approx", "Lst-sq"]]
 
     sns.set_theme()
-    fig, ax = plt.subplots(3, 3, figsize=(14, 8))#, sharey="col")
+    fig, ax = plt.subplots(3, 3, figsize=(20, 12))#, sharey="col")
 
     for count, number in enumerate(number_grid):
         theta = param_dict[number]
@@ -58,15 +70,15 @@ if __name__ == "__main__":
 
         for ref, i in enumerate(errors):
             if ref == 2:
-                boxplot = ax[count, ref].boxplot(i[:, 0:3], patch_artist=True)
-                ax[count, ref].set_xticklabels(labels[count][0:3], fontdict={"fontsize": 13})
+                boxplot = ax[count, ref].boxplot(i[:, 0:5], patch_artist=True)
+                ax[count, ref].set_xticklabels(labels[count][0:5], fontdict={"fontsize": 13})
             else:
                 boxplot = ax[count, ref].boxplot(i, patch_artist=True)
                 ax[count, ref].set_xticklabels(labels[count], fontdict={"fontsize": 13})
             if count == 0:
                 ax[count, ref].set_title(text[ref], fontdict={"fontsize": 15})
             for j, patch in enumerate(boxplot['boxes']):
-                if len(plot_names[j]) > 9:
+                if len(plot_names[j]) == 10:
                     alpha = 0.75
                     hatch = "///"
                 else:
@@ -79,5 +91,5 @@ if __name__ == "__main__":
 
     # ax[0, 0].legend(handles=legend_elements, loc='best')
     plt.savefig('boxplots2O.pdf', bbox_inches='tight', format="pdf", quality=90)
-
+    plt.tight_layout()
     plt.show()

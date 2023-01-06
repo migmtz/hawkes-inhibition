@@ -84,12 +84,22 @@ def obtain_average_estimation(file_name, number, dim, number_estimations):
             result = np.zeros((dim + dim * dim,))
     else:
         result = np.zeros((2 * dim + dim * dim,))
-    with open("estimation/_traitements2_" + str(number) + file_name, 'r') as read_obj:
-        csv_reader = csv.reader(read_obj)
-        for row in csv_reader:
-            if n < number_estimations:
-                result += np.array([float(i) for i in row])
-                n += 1
+
+    if file_name[0:4] == "inte" or file_name[0:4] == "minm":
+        with open("estimation_resamples/_resamples_" + str(number) + file_name, 'r') as read_obj:
+            print(file_name)
+            csv_reader = csv.reader(read_obj)
+            for row in csv_reader:
+                if n < number_estimations:
+                    result += np.array([float(i) for i in row])
+                    n += 1
+    else:
+        with open("estimation/_traitements2_" + str(number) + file_name, 'r') as read_obj:
+            csv_reader = csv.reader(read_obj)
+            for row in csv_reader:
+                if n < number_estimations:
+                    result += np.array([float(i) for i in row])
+                    n += 1
     result /= n
 
     return result
@@ -101,8 +111,9 @@ if __name__ == "__main__":
     beta = np.zeros((250, 1))
 
     number_estimations = np.zeros((250, 250))
-    for number in range(1, 11):
-        a_file = open("traitements2/train" + str(number) + ".pkl", "rb")
+    for number in range(1, 21):
+        # a_file = open("traitements2/train" + str(number) + ".pkl", "rb") # Pour utiliser si estimation normales
+        a_file = open("resamples/resample" + str(number), "rb")
         tList, filtre_dict_orig, orig_dict_filtre = pickle.load(a_file)
         dim = len(filtre_dict_orig)
         a_file.close()
@@ -114,7 +125,7 @@ if __name__ == "__main__":
         # for i in orig_dict_filtre.keys():
         #     number_estimations[i-1] += 1
 
-        plot_names = ["threshgrad90.0"]
+        plot_names = ["minmax"]
         labels = ["MLE"]
         estimation = obtain_average_estimation(plot_names[0], number, dim, 1)
         mu_est = estimation[:dim]
@@ -125,7 +136,7 @@ if __name__ == "__main__":
         #print(filtre_dict_orig)
 
         for i in range(1, dim+1):
-            mu[filtre_dict_orig[i] - 1] += mu_est[i - 1]
+            mu[int(filtre_dict_orig[i]) - 1] += mu_est[i - 1]
             aux = []
             for j in range(250):
                 if j+1 in filtre_dict_orig.values():
@@ -133,8 +144,8 @@ if __name__ == "__main__":
                 else:
                     aux += [0]
 
-            alpha[filtre_dict_orig[i] - 1, :] += np.array(aux)
-            beta[filtre_dict_orig[i] - 1] += beta_est[i - 1]
+            alpha[int(filtre_dict_orig[i]) - 1, :] += np.array(aux)
+            beta[int(filtre_dict_orig[i]) - 1] += beta_est[i - 1]
 
     number_estimations[number_estimations == 0] = 1
     mu /= np.amax(number_estimations, axis=1).reshape((250,1))
@@ -177,8 +188,8 @@ if __name__ == "__main__":
     np.random.seed(5)
     #only = np.random.choice(range(1, 224), size=3, replace=False)
     only = range(1,224)
-    print(only)
-    pos_self = [i for i,j in G.edges() if G[i][j]["intensity"] >= 0 and i == j and i in only]
+    print(np.sum(np.abs(heatmap) > 0))
+    pos_self = [i for i,j in G.edges() if G[i][j]["intensity"] > 0 and i == j and i in only]
     neg_self = [i for i,j in G.edges() if G[i][j]["intensity"] < 0 and i == j and i in only]
     positive_strong = [(i, j) for i,j in G.edges() if G[i][j]["intensity"] > 0 and G[i][j]["intensity"]/beta[i-1] > 0.25 and i!= j and (i in only or j in only)]
     negative_strong = [(i, j) for i, j in G.edges() if G[i][j]["intensity"] < 0 and G[i][j]["intensity"]/beta[i-1] < -0.25 and i!= j and (i in only or j in only)]
