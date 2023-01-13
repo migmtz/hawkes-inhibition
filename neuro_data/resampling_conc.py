@@ -23,6 +23,7 @@ if __name__ == "__main__":
             a_file = open("traitements2/train" + str(j) + ".pkl", "rb")
             tList, filtre_dict_orig, orig_dict_filtre = pickle.load(a_file)
             a_file.close()
+            print(tList[0:10])
 
             final_list += [(t + count*6.5, filtre_dict_orig[m]) for t,m in tList[1:-1]]
             count += 1
@@ -32,8 +33,9 @@ if __name__ == "__main__":
         f_dict_o = dict(zip(o_dict_f.values(), o_dict_f.keys()))
         final_list = [(t, o_dict_f[m]) for t, m in final_list]
         final_list = [(0.0, 0)] + final_list + [(6.5*sample_size, 0)]
-        file = open('resamples/resample' + str(i + 1), 'wb')
-        pickle.dump((final_list, f_dict_o, o_dict_f), file)
-        file.close()
-
+        print(final_list[0:10])
+        #file = open('resamples/resample' + str(i + 1), 'wb')
+        #pickle.dump((final_list, f_dict_o, o_dict_f), file)
+        #file.close()
+        print()
     print(count_of_index)

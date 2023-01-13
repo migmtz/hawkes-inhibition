@@ -46,13 +46,17 @@ colors = ["orange", "orange", "g", "b", "g", "b", "r", "r"]
 
 
 if __name__ == "__main__":
-    number = 9
+    number = 0
     theta = param_dict[number]
     dim = int(np.sqrt(1 + theta.shape[0]) - 1)
     number_estimations = 25
 
-    plot_names = ["grad", "threshgrad3.0", "confinterval", "confminmax", "approx", "tick_bfgs", "tick_beta_bfgs"]
-    labels = ["MLE", "MLE-0.03", "ConfInt", "ConfMM", "Approx", "Lst-sq", "Grid-lst-sq"]
+    dictionary = {0:1, 1:2, 9:3}
+
+    numbers_aux = {0:10.0, 1: 5.0, 9:3.0}
+    labels_aux = {0: 0.10, 1: 0.05, 9: 0.03}
+    plot_names = ["grad", "threshgrad"+str(numbers_aux[number]), "confminmax", "confinterval", "approx", "tick_bfgs", "tick_beta_bfgs"]
+    labels = ["MLE", "MLE-"+str(labels_aux[number]), "CfQ", "CfStd", "Approx", "Lst-sq", "Grid-lst-sq"]
     estimations = []
 
     for file_name in plot_names:
@@ -94,6 +98,6 @@ if __name__ == "__main__":
                     # print(dim + dim * i + j)
                     ax[i, j].plot(x, estimation[dim + dim * i + j] * np.exp(-estimation[dim + dim * dim + i] * x), c=colors[dict_names[plot_names[ref]]], linestyle=styles[dict_names[plot_names[ref]]],label=labels[ref], alpha=0.5)
     plt.legend()
-    plt.savefig('reconstruction_param_3.pdf', bbox_inches='tight', format="pdf", quality=90)
+    plt.savefig('reconstruction_param_'+ str(dictionary[number]) +'.pdf', bbox_inches='tight', format="pdf", quality=90)
 
     plt.show()

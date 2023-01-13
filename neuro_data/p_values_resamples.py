@@ -7,6 +7,7 @@ import seaborn as sns
 from simulated_data.time_change import time_change
 from scipy.stats import kstest
 import pickle
+import matplotlib.colors as mcolors
 
 
 def obtain_average_estimation(directory, file_name, number_tot):
@@ -72,16 +73,25 @@ def obtain_average_estimation(directory, file_name, number_tot):
 if __name__ == "__main__":
 
     np.random.seed(1)
-    plot_names = [("estimation/_traitements2_", "grad"), ("estimation/_traitements2_", "threshgrad20.0"), ("estimation/_traitements2_", "threshgrad40.0"), ("estimation/_traitements2_", "threshgrad60.0"), ("estimation/_traitements2_", "threshgrad90.0"), ("estimation/_traitements2_", "threshgrad95.0"), ("estimation_resamples/_resamples_", "grad"), ("estimation_resamples/_resamples_", "intervalgrad"), ("estimation_resamples/_resamples_", "minmax"),  ("estimation/_traitements2_", "diag")]
-    labels = ["MLE", "MLE-0.20", "MLE-0.40", "MLE-0.60", "MLE-0.90", "MLE-0.95", "resampled-MLE", "CfStd", "CfQuant", "Diag"]
-    numbers = [11, 11, 11, 11, 11, 11, 21, 21, 21, 11]
-
+    #plot_names = [("estimation/_traitements2_", "grad"), ("estimation/_traitements2_", "threshgrad20.0"), ("estimation/_traitements2_", "threshgrad40.0"), ("estimation/_traitements2_", "threshgrad60.0"), ("estimation/_traitements2_", "threshgrad90.0"), ("estimation/_traitements2_", "threshgrad95.0"), ("estimation_resamples/_resamples_", "grad"), ("estimation_resamples/_resamples_", "intervalgrad"), ("estimation_resamples/_resamples_", "minmax"),  ("estimation/_traitements2_", "diag")]
+    #labels = ["MLE", "MLE-0.20", "MLE-0.40", "MLE-0.60", "MLE-0.90", "MLE-0.95", "resampled-MLE", "CfStd", "CfQuant", "Diag"]
+    #plot_names = [("estimation/_traitements2_", "grad"), ("estimation/_traitements2_", "threshgrad40.0"), ("estimation/_traitements2_", "threshgrad60.0"), ("estimation/_traitements2_", "threshgrad90.0"), ("estimation/_traitements2_", "threshgrad95.0"), ("estimation_resamples/_resamples_", "grad"), ("estimation_resamples/_resamples_", "minmax"), ("estimation_resamples/_resamples_", "intervalgrad")]
+    #labels = ["MLE", "MLE-0.40", "MLE-0.60", "MLE-0.90", "MLE-0.95", "resampled-MLE", "CfQ", "CfStd"]
+    plot_names = [("estimation/_traitements2_", "grad"), ("estimation/_traitements2_", "threshgrad40.0"),
+                  ("estimation/_traitements2_", "threshgrad60.0"),
+                  ("estimation/_traitements2_", "threshgrad90.0"), ("estimation_resamples/_resamples_", "grad"),
+                  ("estimation_resamples/_resamples_", "minmax"), ("estimation_resamples/_resamples_", "intervalgrad"),
+                  ("estimation/_traitements2_", "diag")]
+    labels = ["MLE", "MLE-0.40", "MLE-0.60", "MLE-0.90", "resampled-MLE", "CfQ", "CfStd", "Diag"]
+    numbers = [11, 11, 11, 11, 21, 21, 21, 11]
+    colorsaux = ["blue", "gold", "orange", "darkorange", "peru", "chocolate", "darkcyan", "orangered", "indianred", "forestgreen"]
+    colors = [mcolors.CSS4_COLORS[i] for i in colorsaux]
     estimations = []
 
     sns.set_theme()
     fig, ax = plt.subplots(figsize=(14, 8))
 
-    for label, (directory, file_name), number_tot in zip(labels, plot_names, numbers):
+    for label, (directory, file_name), number_tot, color in zip(labels, plot_names, numbers, colors):
         mu, alpha, beta = obtain_average_estimation(directory, file_name, range(1, number_tot))
         estimations += [(mu, alpha, beta)]
 
@@ -139,12 +149,13 @@ if __name__ == "__main__":
 
         a = p_values.reshape((1, len(p_values)))
         print(" \\\\\n".join([" & ".join(map(str, line)) for line in a]))
+        print(a[0, -1])
         if file_name[0:4] == "thre":
             marker = "^"
         elif file_name[0:2] == "Cf":
             marker = "+"
         else:
-            marker = "."
+            marker = "o"
         sc = ax.scatter([i for i in range(len(p_values))], np.sort(p_values), marker=marker, label=label, s=28)
         argsort = np.argsort(p_values)
         ax.scatter([[np.argmax(argsort)]], [p_values[-1]], c=sc.get_edgecolor(), marker="X", s=256, edgecolors="k")
@@ -153,7 +164,7 @@ if __name__ == "__main__":
     ax.set_yscale('log')
 
     plt.legend(prop={'size': 14})
-    #plt.savefig('p_values_log_2_upd.pdf', bbox_inches='tight', format="pdf", quality=90)
+    plt.savefig('p_values_conf.pdf', bbox_inches='tight', format="pdf", quality=90)
 
     plt.show()
 

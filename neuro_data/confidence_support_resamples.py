@@ -143,9 +143,7 @@ if __name__ == "__main__":
     quantile = -t.ppf((1 - level_conf) / 2, np.maximum(number_estimations - 1, 0))
     print(quantile)
 
-    #mu_dev = quantile*(mu_dev)/(np.maximum(number_estimations - 1, 0))
-    alpha_dev = quantile * (alpha_dev) / (np.maximum(number_estimations - 1, 0))
-    #beta_dev = quantile * (beta_dev) / (np.maximum(number_estimations - 1, 0))
+    alpha_dev = (alpha_dev) / np.sqrt(np.maximum(number_estimations, 0))
 
     #support = np.invert((alpha - alpha_dev < 0) & (0 < alpha + alpha_dev))
     support = np.invert((min_alpha < 0) & (0 < max_alpha))
@@ -160,7 +158,7 @@ if __name__ == "__main__":
 
     print("Supportminmax", np.sum(support)/(alpha.shape[0]**2))
 
-    support = np.invert((alpha - alpha_dev < 0) & (0 < alpha + alpha_dev))
+    support = np.invert((alpha - quantile*alpha_dev < 0) & (0 < alpha + quantile*alpha_dev))
 
     hex_list = ['#FF3333', '#FFFFFF', '#33FF49']
     blah = get_continuous_cmap(hex_list)
@@ -170,6 +168,25 @@ if __name__ == "__main__":
     sns.heatmap((support * alpha), ax=ax2[1], cmap=blah, center=0)
 
     print("Supportintervals", np.sum(support) / (alpha.shape[0] ** 2))
+
+    T_statistic = np.abs(alpha / alpha_dev).ravel()
+    n_est = np.maximum(number_estimations, 0).ravel()
+
+    p_values = np.array([1 - (t.cdf(T, n - 1) - t.cdf(-T, n - 1)) for T, n in zip(T_statistic, n_est)])
+    x = np.arange(1, len(p_values) + 1)
+
+    ord_p_values = np.argsort(p_values)
+    reord_p_values = np.argsort(ord_p_values)
+    support = (p_values[ord_p_values] < x * (1 - level_conf) / len(p_values))
+
+    dim = mu.shape[0]
+    support = support[reord_p_values].reshape((dim, dim))
+
+    fig3, ax3 = plt.subplots(1, 2)
+    sns.heatmap(support, ax=ax3[0])
+    sns.heatmap((support * alpha), ax=ax3[1], cmap=blah, center=0)
+
+    print("SupportMTest", np.sum(support) / (alpha.shape[0] ** 2))
 
     plt.show()
 

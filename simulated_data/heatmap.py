@@ -52,8 +52,8 @@ if __name__ == "__main__":
 
     # plot_names = ["grad", "threshgrad25.0", "approx", "tick_bfgs"]
     # labels = ["MLE", "MLE-$0.25$", "Approx", "Lst-sq"]
-    plot_names = ["grad", "threshgrad30.0", "confinterval", "confminmax", "approx", "tick_bfgs"]
-    labels = ["MLE", "MLE-$0.30$", "ConfInterval", "ConfMM", "Approx", "Lst-sq"]
+    plot_names = ["grad", "threshgrad5.0", "confminmax", "confinterval", "approx", "tick_bfgs"]
+    labels = ["MLE", "MLE-$0.05$", "CfQ", "CfStd", "Approx", "Lst-sq"]
     estimations = [obtain_average_estimation(file_name, number, dim, number_estimations) for file_name in plot_names]
 
     sns.set_theme()

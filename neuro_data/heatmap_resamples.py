@@ -34,8 +34,8 @@ if __name__ == "__main__":
     beta = np.zeros((250, 1))
 
     number_estimations = np.zeros((250, 250))
-    only_heatmap = False
-    for number in range(1, 21):
+    only_heatmap = True
+    for number in range(1,21):
         a_file = open("resamples/resample" + str(number) + "", "rb")
         tList, filtre_dict_orig, orig_dict_filtre = pickle.load(a_file)
         dim = len(filtre_dict_orig)
@@ -107,7 +107,7 @@ if __name__ == "__main__":
 
     fig, ax = plt.subplots(figsize=(10, 12))
     print(np.sum(np.abs(heatmap_beta) > 0))
-    g = sns.heatmap(heatmap_beta, ax=ax, cmap=blah, center=0, annot=False, linewidths=0.0, mask=mask, xticklabels=10, yticklabels=10, square=True)
+    g = sns.heatmap(np.sign(heatmap_beta), ax=ax, cmap=blah, center=0, annot=False, linewidths=0.0, mask=mask, xticklabels=10, yticklabels=10, square=True)
     g.set_xticklabels(range(1, np.sum(estimated_mask), 10), rotation=0)
     g.set_yticklabels(range(1, np.sum(estimated_mask), 10), rotation=90)
     ax.set_title("sign(alph)/beta")
@@ -176,5 +176,5 @@ if __name__ == "__main__":
         print("Giving null how many receiving", (pos_rec - neg_rec)[(pos_giv - neg_giv) == 0])
 
     plt.tight_layout()
-    figalt.savefig('heatmap_real_minmax.pdf', bbox_inches='tight', format="pdf", quality=90)
+    #figalt.savefig('heatmap_real_minmax.pdf', bbox_inches='tight', format="pdf", quality=90)
     plt.show()

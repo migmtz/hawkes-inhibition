@@ -42,7 +42,7 @@ def obtain_average_estimation(file_name, number, dim, number_estimations):
 
 if __name__ == "__main__":
 
-    number = 0
+    number = 7
     print("Estimation number ", str(number))
     theta = param_dict[number]
     print(theta)
@@ -66,7 +66,7 @@ if __name__ == "__main__":
 
     #print(estimations)
     p_values = np.zeros((len(plot_names)+1, dim+1)) # As in the table
-    number_simulations = number_estimations
+    number_simulations = 25
     for i in range(number_simulations):
         np.random.seed(1000+i)
         hawkes = multivariate_exponential_hawkes(mu=mu, alpha=alpha, beta=beta, max_jumps=max_jumps)
