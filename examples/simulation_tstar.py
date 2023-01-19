@@ -13,13 +13,17 @@ if __name__ == "__main__":
     matplotlib.rcParams.update({'font.size': 14})
     sns.set_theme()
 
-    np.random.seed(3)
+    #np.random.seed(3)
+    np.random.seed(4)
 
     dim = 2
 
-    mu = np.array([0.8, 1.0])
-    alpha = np.array([[-1.9, 3], [0.9, -0.7]])
-    beta = np.array([[2, 20], [3, 2]])
+    # mu = np.array([0.8, 1.0])
+    # alpha = np.array([[-1.9, 3], [0.9, -0.7]])
+    # beta = np.array([[2, 20], [3, 2]])
+    mu = np.array([1.2, 0.4])
+    alpha = np.array([[-3.0, 2.0], [1.2, -2.7]])
+    beta = np.array([[2.5, 2.5], [1.6, 1.6]])
 
     hawkes = multivariate_exponential_hawkes(mu=mu, alpha=alpha, beta=beta, max_jumps=15 * (dim - 1))
 
@@ -68,15 +72,15 @@ if __name__ == "__main__":
     #               s=15, c="r", zorder=3)
     # plt.scatter([0.2, 1.7, 5.75, 11.05, 15], np.array(hawkes.intensity_jumps[1:]), s=15, c="r", zorder=3)
 
-    ax[0].set_xlim((0, 2))
-    ax[1].set_xlim((0, 2))
-    ax[0].set_ylim((-1.5, 3))
+    ax[0].set_xlim((8, 10))
+    ax[1].set_xlim((8, 10))
+    # ax[0].set_ylim((-1.5, 3))
 
     ax[0].set_ylabel("$\lambda^1$")
     ax[1].set_ylabel("$\lambda^2$")
 
     ax[1].set_xlabel("$t$")
 
-    plt.savefig('timesMarkedMulti.pdf', bbox_inches='tight', format="pdf", quality=90)
+    #plt.savefig('timesMarkedMulti.pdf', bbox_inches='tight', format="pdf", quality=90)
 
     plt.show()

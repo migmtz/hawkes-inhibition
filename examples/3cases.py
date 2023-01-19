@@ -56,7 +56,7 @@ if __name__ == "__main__":
     ax[1].plot(lines2last, fun2last(lines2last), c="r")
     aux = times2[0] + (1 / beta) * np.log((0.2) / (mu))
     ax[1].scatter([times2[0], times2[1]], [0, 0], marker="x", linewidths=1, c="k")
-    ax[1].scatter([aux], [0], marker="o", linewidths=1, c="brown", label="$T_{(k)} + \\beta_i^{-1}\log\left(\\frac{\mu^i - \lambda^{i\star}(T_{(k)})}{\mu^i}\\right)}$")
+    ax[1].scatter([aux], [0], marker="o", linewidths=1, c="brown", label="$T_{(k)} + \\beta_i^{-1}\log\left(\\frac{\mu_i - \lambda^{i\star}(T_{(k)})}{\mu_i}\\right)}$")
     ax[1].annotate("$T_{(k)}$", xy=(times1[0], 0), xytext=(times2[0] - 0.55, -0.03),
                    annotation_clip=False)
     ax[1].annotate("$T_{(k)}^{i\star}$", xy=(times1[0], 0), xytext=(aux + 0.1, -0.03),

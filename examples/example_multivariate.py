@@ -10,15 +10,21 @@ rcParams["mathtext.fontset"] = "dejavuserif"
 
 if __name__ == "__main__":
     # Set seed
-    np.random.seed(0)
+    np.random.seed(5)
 
     dim = 2  # 2, 3 ou 4
 
+    # if dim == 2:
+    #
+    #     mu = np.array([0.8, 1.0])
+    #     alpha = np.array([[-1.9, 3], [0.9, -0.7]])
+    #     beta = np.array([[2, 20], [3, 2]])
+
     if dim == 2:
 
-        mu = np.array([0.8, 1.0])
-        alpha = np.array([[-1.9, 3], [0.9, -0.7]])
-        beta = np.array([[2, 20], [3, 2]])
+        mu = np.array([0.1, 0.1])
+        alpha = np.array([[-10, 10.99], [10.99, -10]])
+        beta = np.array([[0.0001, 11], [11, 0.0001]])
 
     elif dim == 3:
 
@@ -41,7 +47,7 @@ if __name__ == "__main__":
     else:
         raise ValueError("Nein")
 
-    hawkes = multivariate_exponential_hawkes(mu=mu, alpha=alpha, beta=beta, max_jumps=15*(dim-1))
+    hawkes = multivariate_exponential_hawkes(mu=mu, alpha=alpha, beta=beta, max_jumps=10)
 
     # Create a process with given parameters and maximal number of jumps.
 

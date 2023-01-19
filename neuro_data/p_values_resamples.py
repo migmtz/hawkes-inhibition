@@ -80,18 +80,18 @@ if __name__ == "__main__":
     plot_names = [("estimation/_traitements2_", "grad"), ("estimation/_traitements2_", "threshgrad40.0"),
                   ("estimation/_traitements2_", "threshgrad60.0"),
                   ("estimation/_traitements2_", "threshgrad90.0"), ("estimation_resamples/_resamples_", "grad"),
-                  ("estimation_resamples/_resamples_", "minmax"), ("estimation_resamples/_resamples_", "intervalgrad"),
+                  ("estimation_resamples/_resamples_", "minmax"), ("estimation_resamples/_resamples_", "stdMT"),
                   ("estimation/_traitements2_", "diag")]
     labels = ["MLE", "MLE-0.40", "MLE-0.60", "MLE-0.90", "resampled-MLE", "CfQ", "CfStd", "Diag"]
     numbers = [11, 11, 11, 11, 21, 21, 21, 11]
-    colorsaux = ["blue", "gold", "orange", "darkorange", "peru", "chocolate", "darkcyan", "orangered", "indianred", "forestgreen"]
-    colors = [mcolors.CSS4_COLORS[i] for i in colorsaux]
+    #colorsaux = ["blue", "gold", "orange", "darkorange", "peru", "chocolate", "darkcyan", "orangered", "indianred", "forestgreen"]
+    #colors = [mcolors.CSS4_COLORS[i] for i in colorsaux]
     estimations = []
 
     sns.set_theme()
     fig, ax = plt.subplots(figsize=(14, 8))
 
-    for label, (directory, file_name), number_tot, color in zip(labels, plot_names, numbers, colors):
+    for label, (directory, file_name), number_tot in zip(labels, plot_names, numbers):
         mu, alpha, beta = obtain_average_estimation(directory, file_name, range(1, number_tot))
         estimations += [(mu, alpha, beta)]
 

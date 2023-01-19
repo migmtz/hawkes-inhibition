@@ -4,6 +4,7 @@ from ast import literal_eval as make_tuple
 import pickle
 import seaborn as sns
 from matplotlib import pyplot as plt
+import matplotlib.gridspec as gridspec
 from matplotlib.colors import LinearSegmentedColormap
 from class_and_func.colormaps import get_continuous_cmap
 
@@ -34,7 +35,6 @@ if __name__ == "__main__":
     beta = np.zeros((250, 1))
 
     number_estimations = np.zeros((250, 250))
-    only_heatmap = True
     for number in range(1,21):
         a_file = open("resamples/resample" + str(number) + "", "rb")
         tList, filtre_dict_orig, orig_dict_filtre = pickle.load(a_file)
@@ -105,12 +105,37 @@ if __name__ == "__main__":
 
     heatmap2 = np.sign(alpha[estimated_mask[0], :][:, estimated_mask[0]])/(beta[estimated_mask[0], :])
 
-    fig, ax = plt.subplots(figsize=(10, 12))
-    print(np.sum(np.abs(heatmap_beta) > 0))
-    g = sns.heatmap(np.sign(heatmap_beta), ax=ax, cmap=blah, center=0, annot=False, linewidths=0.0, mask=mask, xticklabels=10, yticklabels=10, square=True)
-    g.set_xticklabels(range(1, np.sum(estimated_mask), 10), rotation=0)
-    g.set_yticklabels(range(1, np.sum(estimated_mask), 10), rotation=90)
-    ax.set_title("sign(alph)/beta")
+    #fig, ax = plt.subplots(1, 2, figsize=(10, 12))
+    fig = plt.figure(figsize=(10, 8))
+    gs = gridspec.GridSpec(1, 3, width_ratios=[1, 10, 1])
+    ax = [plt.subplot(gs[0]), plt.subplot(gs[1]), plt.subplot(gs[2])]
+    print("Percentage", np.sum(np.abs(heatmap_beta) > 0)/(np.sum(estimated_mask)**2))
+    blah = LinearSegmentedColormap.from_list('Custom', hex_list, len(hex_list))
+    galt = sns.heatmap(np.sign(heatmap2), ax=ax[1], cmap=blah, center=0, annot=False, linewidths=0.0, mask=mask,
+                       xticklabels=20,
+                       yticklabels=20, square=False, cbar=True, cbar_kws={"orientation": "horizontal", "pad": 0.05})
+    galt.set_xticklabels(range(1, np.sum(estimated_mask), 20), rotation=0)
+    galt.set_yticklabels(range(1, np.sum(estimated_mask), 20), rotation=90)
+    colorbar = galt.collections[0].colorbar
+    colorbar.set_ticks([-0.667, 0, 0.667])
+    colorbar.set_ticklabels(['Inhibiting interaction', 'No interaction', 'Exciting interaction'])
+    ax[1].set_title("$(\\tilde{\\alpha}_{ij})_{ij}^+$")
+    #ax.set_title("sign(alph)/beta")
+
+    gm = sns.heatmap(mu, ax=ax[0], cmap="Greens", yticklabels=20,cbar=True, cbar_kws={"orientation": "horizontal", "pad": 0.05})
+    #g.set_xticklabels([])
+    #gm.set_xticklabels(range(1, np.sum(estimated_mask), 20), rotation=90)
+    ax[0].set_title("$(\\tilde{\\mu}_i)_{i}$")
+    g = sns.heatmap(beta, ax=ax[2], cmap="Greens", yticklabels=20,cbar=True, cbar_kws={"orientation": "horizontal", "pad": 0.05})
+    #g.set_xticklabels([])
+    #g.set_yticklabels(range(1, np.sum(estimated_mask), 10), rotation=90)
+    ax[2].set_title("$(\\tilde{\\beta}_i)_{i}$")
+    only_heatmap = True
+
+    print("Most receiving", np.max(np.sum((np.abs(heatmap_beta) > 0), axis=1)))
+    print("Most giving", np.max(np.sum((np.abs(heatmap_beta) > 0), axis=0)))
+
+    print("How many Diag", np.sum((np.abs(np.diag(heatmap_beta)) > 0)))
 
     if not(only_heatmap):
 
@@ -175,6 +200,6 @@ if __name__ == "__main__":
         print("Giving null ?", np.sum((pos_giv - neg_giv) == 0), np.arange(len(pos_rec))[(pos_giv - neg_giv) == 0])
         print("Giving null how many receiving", (pos_rec - neg_rec)[(pos_giv - neg_giv) == 0])
 
-    plt.tight_layout()
-    #figalt.savefig('heatmap_real_minmax.pdf', bbox_inches='tight', format="pdf", quality=90)
+    #plt.tight_layout()
+    fig.savefig('heatmap_mu_beta.pdf', bbox_inches='tight', format="pdf", quality=90)
     plt.show()

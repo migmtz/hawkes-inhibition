@@ -39,7 +39,7 @@ def obtain_average_error(file_name, number, dim, number_estimations, theta):
 
 
 colors = ["orange", "orange", "r", "r", "g", "b"]
-text = ["$\mu^i$", "$\\alpha_{ij}$", "$\\beta_i$", "Total"]
+text = ["$\mu_i$", "$\\alpha_{ij}$", "$\\beta_i$", "Total"]
 hatches = ["", "///", "", "///", "", ""]
 
 
@@ -48,11 +48,11 @@ if __name__ == "__main__":
     number_grid = [0,1,9]
     number_estimations = 25
 
-    plot_names = ["grad", "threshgrad", "confinterval", "confminmax", "approx", "tick_bfgs"]#, "tick_beta", "tick_beta_bfgs"]
+    plot_names = ["grad", "threshgrad", "confminmax", "confinterval", "approx", "tick_bfgs"]#, "tick_beta", "tick_beta_bfgs"]
     numbers_thresh = [10.0, 5.0, 3.0]
-    labels = [["MLE", "MLE-0.10", "CfStd", "CfQuant", "Approx", "Lst-sq"]]
-    labels += [["MLE", "MLE-0.05", "CfStd", "CfQuant", "Approx", "Lst-sq"]]
-    labels += [["MLE", "MLE-0.03", "CfStd", "CfQuant", "Approx", "Lst-sq"]]
+    labels = [["MLE", "MLE-0.10", "CfQ", "CfStd", "Approx", "Lst-sq"]]
+    labels += [["MLE", "MLE-0.05", "CfQ", "CfStd", "Approx", "Lst-sq"]]
+    labels += [["MLE", "MLE-0.03", "CfQ", "CfStd", "Approx", "Lst-sq"]]
 
     sns.set_theme()
     fig, ax = plt.subplots(3, 3, figsize=(20, 12))#, sharey="col")
@@ -80,6 +80,9 @@ if __name__ == "__main__":
             for j, patch in enumerate(boxplot['boxes']):
                 if len(plot_names[j]) == 10:
                     alpha = 0.75
+                    hatch = "///"
+                elif len(plot_names[j]) > 10:
+                    alpha = 1.0
                     hatch = "///"
                 else:
                     alpha = 1.0
