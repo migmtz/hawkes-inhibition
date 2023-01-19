@@ -39,6 +39,41 @@ def obtain_average_estimation(file_name, number, dim, number_estimations):
 
     return result
 
+def obtain_errors_estimation(file_name, number, theta, number_estimations):
+    n = 0
+    errors = np.zeros((number_estimations, 4))
+
+    if file_name[0:4] == "conf":
+        with open("sample_" + str(number_estimations) + "/estimation_" + str(number) + '_file/_estimation' + str(number) + file_name, 'r') as read_obj:
+            print(file_name)
+            csv_reader = csv.reader(read_obj)
+            for row in csv_reader:
+                if n < number_estimations:
+                    estimation = np.array([float(i) for i in row])
+                    errors[n, :] += relative_squared_loss(theta, estimation)
+                    n += 1
+    elif file_name[0:4] == "tick":
+        with open("estimation_"+str(number)+'_file/_estimation'+str(number)+file_name, 'r') as read_obj:
+            csv_reader = csv.reader(read_obj)
+            for row in csv_reader:
+                if n < number_estimations:
+                    estimation = np.array([float(i) for i in row])
+                    errors[n, :] += relative_squared_loss(theta, np.concatenate((estimation, beta.squeeze())))
+                    n += 1
+    else:
+        with open("estimation_"+str(number)+'_file/_estimation'+str(number)+file_name, 'r') as read_obj:
+            csv_reader = csv.reader(read_obj)
+            for row in csv_reader:
+                if n < number_estimations:
+                    estimation = np.array([float(i) for i in row])
+                    errors[n, :] += relative_squared_loss(theta, estimation)
+                    n += 1
+    print(file_name, n)
+
+    return errors
+
+colors = ["orange", "orange", "r", "r", "g", "b"]
+
 
 if __name__ == "__main__":
     number = 7
@@ -126,5 +161,38 @@ if __name__ == "__main__":
         # ax[ref][1].set_title(str(np.round(false_0, 2)) + " " + str(np.round(false_non_0, 2)))
 
     #plt.tight_layout()
-    fig.savefig('heatmap_hori.pdf', bbox_inches='tight', format="pdf", quality=90)
+    # fig.savefig('heatmap_hori.pdf', bbox_inches='tight', format="pdf", quality=90)
+
+    fig_box, ax_box = plt.subplots(3, 1, figsize=(14, 8), sharex=True)
+    for ref, file_name in enumerate(plot_names):
+        errors = obtain_errors_estimation(file_name, number, theta, number_estimations)
+        for i in range(3):
+            if ref <= 4:
+                boxplot = ax_box[i].boxplot(errors[:, i], positions=[ref], patch_artist=True)
+            else:
+                if i != 2:
+                    boxplot = ax_box[i].boxplot(errors[:, i], positions=[ref], patch_artist=True)
+                    #ax_box[i].set_xticklabels(labels[ref], fontdict={"fontsize": 13})
+            try:
+                for j, patch in enumerate(boxplot['boxes']):
+                    if len(plot_names[ref]) == 10:
+                        alpha = 0.75
+                        hatch = "///"
+                    elif len(plot_names[ref]) > 10:
+                        alpha = 1.0
+                        hatch = "///"
+                    else:
+                        alpha = 1.0
+                        hatch = ""
+                    patch.set(alpha=alpha, hatch=hatch, facecolor=colors[ref])
+            except:
+                pass
+    ax_box[0].set_title("$\\mu_i$")
+    ax_box[1].set_title("$\\alpha_{ij}$")
+    ax_box[2].set_title("$\\beta_i$")
+    ax_box[2].set_xticks(range(6))
+    ax_box[2].set_xticklabels(labels, fontdict={"fontsize": 13})
+
+    fig_box.savefig('boxplots_10_dim.pdf', bbox_inches='tight', format="pdf", quality=90)
+
     plt.show()
