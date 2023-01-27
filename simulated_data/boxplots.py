@@ -50,9 +50,9 @@ if __name__ == "__main__":
 
     plot_names = ["grad", "threshgrad", "confminmax", "confinterval", "approx", "tick_bfgs"]#, "tick_beta", "tick_beta_bfgs"]
     numbers_thresh = [10.0, 5.0, 3.0]
-    labels = [["MLE", "MLE-0.10", "CfQ", "CfStd", "Approx", "Lst-sq"]]
-    labels += [["MLE", "MLE-0.05", "CfQ", "CfStd", "Approx", "Lst-sq"]]
-    labels += [["MLE", "MLE-0.03", "CfQ", "CfStd", "Approx", "Lst-sq"]]
+    labels = [["MLE", "MLE-0.10", "CfE", "CfSt", "Approx", "Lst-sq"]]
+    labels += [["MLE", "MLE-0.05", "CfE", "CfSt", "Approx", "Lst-sq"]]
+    labels += [["MLE", "MLE-0.03", "CfE", "CfSt", "Approx", "Lst-sq"]]
 
     sns.set_theme()
     fig, ax = plt.subplots(3, 3, figsize=(20, 12))#, sharey="col")

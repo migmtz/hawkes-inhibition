@@ -88,7 +88,7 @@ if __name__ == "__main__":
     # plot_names = ["grad", "threshgrad25.0", "approx", "tick_bfgs"]
     # labels = ["MLE", "MLE-$0.25$", "Approx", "Lst-sq"]
     plot_names = ["grad", "threshgrad5.0", "confminmax", "confinterval", "approx", "tick_bfgs"]
-    labels = ["MLE", "MLE-$0.05$", "CfQ", "CfStd", "Approx", "Lst-sq"]
+    labels = ["MLE", "MLE-$0.05$", "CfE", "CfSt", "Approx", "Lst-sq"]
     estimations = [obtain_average_estimation(file_name, number, dim, number_estimations) for file_name in plot_names]
 
     sns.set_theme()
@@ -161,7 +161,7 @@ if __name__ == "__main__":
         # ax[ref][1].set_title(str(np.round(false_0, 2)) + " " + str(np.round(false_non_0, 2)))
 
     #plt.tight_layout()
-    # fig.savefig('heatmap_hori.pdf', bbox_inches='tight', format="pdf", quality=90)
+    fig.savefig('heatmap_hori.pdf', bbox_inches='tight', format="pdf", quality=90)
 
     fig_box, ax_box = plt.subplots(3, 1, figsize=(14, 8), sharex=True)
     for ref, file_name in enumerate(plot_names):

@@ -104,9 +104,11 @@ if __name__ == "__main__":
     #print(heatmap.shape, mask.shape)
 
     heatmap2 = np.sign(alpha[estimated_mask[0], :][:, estimated_mask[0]])/(beta[estimated_mask[0], :])
+    mu = mu[estimated_mask[0], :]
+    beta = beta[estimated_mask[0], :]
 
     #fig, ax = plt.subplots(1, 2, figsize=(10, 12))
-    fig = plt.figure(figsize=(10, 8))
+    fig = plt.figure(figsize=(10, 10))
     gs = gridspec.GridSpec(1, 3, width_ratios=[1, 10, 1])
     ax = [plt.subplot(gs[0]), plt.subplot(gs[1]), plt.subplot(gs[2])]
     print("Percentage", np.sum(np.abs(heatmap_beta) > 0)/(np.sum(estimated_mask)**2))
@@ -122,18 +124,26 @@ if __name__ == "__main__":
     ax[1].set_title("$(\\tilde{\\alpha}_{ij})_{ij}^+$")
     #ax.set_title("sign(alph)/beta")
 
-    gm = sns.heatmap(mu, ax=ax[0], cmap="Greens", yticklabels=20,cbar=True, cbar_kws={"orientation": "horizontal", "pad": 0.05})
+    gm = sns.heatmap(mu, ax=ax[0], cmap="Greens", yticklabels=20, cbar=True, cbar_kws={"orientation": "horizontal", "pad": 0.05})
     #g.set_xticklabels([])
-    #gm.set_xticklabels(range(1, np.sum(estimated_mask), 20), rotation=90)
+    gm.set_yticklabels(range(1, np.sum(estimated_mask), 20), rotation=90)
     ax[0].set_title("$(\\tilde{\\mu}_i)_{i}$")
-    g = sns.heatmap(beta, ax=ax[2], cmap="Greens", yticklabels=20,cbar=True, cbar_kws={"orientation": "horizontal", "pad": 0.05})
+    g = sns.heatmap(beta, ax=ax[2], cmap="Greens", yticklabels=20, cbar=True, cbar_kws={"orientation": "horizontal", "pad": 0.05})
     #g.set_xticklabels([])
-    #g.set_yticklabels(range(1, np.sum(estimated_mask), 10), rotation=90)
+    g.set_yticklabels(range(1, np.sum(estimated_mask), 20), rotation=90)
     ax[2].set_title("$(\\tilde{\\beta}_i)_{i}$")
     only_heatmap = True
 
     print("Most receiving", np.max(np.sum((np.abs(heatmap_beta) > 0), axis=1)))
     print("Most giving", np.max(np.sum((np.abs(heatmap_beta) > 0), axis=0)))
+    leas_rec = np.where(np.sum((np.abs(heatmap_beta) > 0), axis=1) == 1)
+    print("Least receiving neurone", leas_rec)
+    leas_giv = np.where(np.sum((np.abs(heatmap_beta) > 0), axis=0) == 1)
+    print("Least giving neurone", leas_giv)
+    print("Least receiving", np.min(np.sum((np.abs(heatmap_beta) > 0), axis=1)))
+    print("Least giving", np.min(np.sum((np.abs(heatmap_beta) > 0), axis=0)))
+    #print(np.argmax(np.abs(heatmap_beta)[leas_rec, :]))
+    #print(np.argmax(np.abs(heatmap_beta)[:, leas_giv]))
 
     print("How many Diag", np.sum((np.abs(np.diag(heatmap_beta)) > 0)))
 

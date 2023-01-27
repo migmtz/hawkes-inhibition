@@ -46,7 +46,7 @@ colors = ["orange", "orange", "g", "b", "g", "b", "r", "r"]
 
 
 if __name__ == "__main__":
-    number = 0
+    number = 9
     theta = param_dict[number]
     dim = int(np.sqrt(1 + theta.shape[0]) - 1)
     number_estimations = 25
@@ -54,9 +54,9 @@ if __name__ == "__main__":
     dictionary = {0:1, 1:2, 9:3}
 
     numbers_aux = {0:10.0, 1: 5.0, 9:3.0}
-    labels_aux = {0: 0.10, 1: 0.05, 9: 0.03}
+    labels_aux = {0: "0.10", 1: "0.05", 9: "0.03"}
     plot_names = ["grad", "threshgrad"+str(numbers_aux[number]), "confminmax", "confinterval", "approx", "tick_bfgs", "tick_beta_bfgs"]
-    labels = ["MLE", "MLE-"+str(labels_aux[number]), "CfQ", "CfStd", "Approx", "Lst-sq", "Grid-lst-sq"]
+    labels = ["MLE", "MLE-"+str(labels_aux[number]), "CfE", "CfSt", "Approx", "Lst-sq", "Grid-lst-sq"]
     estimations = []
 
     for file_name in plot_names:

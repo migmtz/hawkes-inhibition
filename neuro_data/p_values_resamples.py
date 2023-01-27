@@ -82,7 +82,7 @@ if __name__ == "__main__":
                   ("estimation/_traitements2_", "threshgrad90.0"), ("estimation_resamples/_resamples_", "grad"),
                   ("estimation_resamples/_resamples_", "minmax"), ("estimation_resamples/_resamples_", "stdMT"),
                   ("estimation/_traitements2_", "diag")]
-    labels = ["MLE", "MLE-0.40", "MLE-0.60", "MLE-0.90", "resampled-MLE", "CfQ", "CfStd", "Diag"]
+    labels = ["MLE", "MLE-0.40", "MLE-0.60", "MLE-0.90", "resampled-MLE", "CfE", "CfSt", "Diag"]
     numbers = [11, 11, 11, 11, 21, 21, 21, 11]
     #colorsaux = ["blue", "gold", "orange", "darkorange", "peru", "chocolate", "darkcyan", "orangered", "indianred", "forestgreen"]
     #colors = [mcolors.CSS4_COLORS[i] for i in colorsaux]
@@ -145,6 +145,7 @@ if __name__ == "__main__":
         p_values = p_values[mask != 0]
 
         p_values = np.round(p_values, 5)
+        print(p_values[12:17])
         print(file_name+" average: ", np.mean(p_values))
 
         a = p_values.reshape((1, len(p_values)))
