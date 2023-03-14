@@ -98,6 +98,8 @@ if __name__ == "__main__":
     heatmap_beta = alpha[estimated_mask[0], :][:, estimated_mask[0]]/(beta[estimated_mask[0], :])
     print(alpha)
 
+    np.savetxt("alpha_ij.csv", heatmap, delimiter=",")
+
     print("1-norm:", np.linalg.norm(np.maximum(heatmap, 0), ord=1))
     print("Spectral radius:", np.max(np.abs(np.linalg.eigvals(np.maximum(heatmap, 0)))))
     mask = heatmap == 0
@@ -115,9 +117,9 @@ if __name__ == "__main__":
     blah = LinearSegmentedColormap.from_list('Custom', hex_list, len(hex_list))
     galt = sns.heatmap(np.sign(heatmap2), ax=ax[1], cmap=blah, center=0, annot=False, linewidths=0.0, mask=mask,
                        xticklabels=20,
-                       yticklabels=20, square=False, cbar=True, cbar_kws={"orientation": "horizontal", "pad": 0.05})
+                       yticklabels=1, square=False, cbar=True, cbar_kws={"orientation": "horizontal", "pad": 0.05})
     galt.set_xticklabels(range(1, np.sum(estimated_mask), 20), rotation=0)
-    galt.set_yticklabels(range(1, np.sum(estimated_mask), 20), rotation=90)
+    galt.set_yticklabels(range(1, np.sum(estimated_mask)+1, 1), rotation=90)
     colorbar = galt.collections[0].colorbar
     colorbar.set_ticks([-0.667, 0, 0.667])
     colorbar.set_ticklabels(['Inhibiting interaction', 'No interaction', 'Exciting interaction'])
@@ -211,5 +213,5 @@ if __name__ == "__main__":
         print("Giving null how many receiving", (pos_rec - neg_rec)[(pos_giv - neg_giv) == 0])
 
     #plt.tight_layout()
-    fig.savefig('heatmap_mu_beta.pdf', bbox_inches='tight', format="pdf", quality=90)
+    #fig.savefig('heatmap_mu_beta.pdf', bbox_inches='tight', format="pdf", quality=90)
     plt.show()

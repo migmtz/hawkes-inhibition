@@ -161,7 +161,8 @@ if __name__ == "__main__":
         # ax[ref][1].set_title(str(np.round(false_0, 2)) + " " + str(np.round(false_non_0, 2)))
 
     #plt.tight_layout()
-    fig.savefig('heatmap_hori.pdf', bbox_inches='tight', format="pdf", quality=90)
+    fig_or.savefig('Realheat.pdf', bbox_inches='tight', format="pdf", quality=90)
+    #fig.savefig('heatmap_hori.pdf', bbox_inches='tight', format="pdf", quality=90)
 
     fig_box, ax_box = plt.subplots(3, 1, figsize=(14, 8), sharex=True)
     for ref, file_name in enumerate(plot_names):
@@ -193,6 +194,6 @@ if __name__ == "__main__":
     ax_box[2].set_xticks(range(6))
     ax_box[2].set_xticklabels(labels, fontdict={"fontsize": 13})
 
-    fig_box.savefig('boxplots_10_dim.pdf', bbox_inches='tight', format="pdf", quality=90)
+    #fig_box.savefig('boxplots_10_dim.pdf', bbox_inches='tight', format="pdf", quality=90)
 
     plt.show()
