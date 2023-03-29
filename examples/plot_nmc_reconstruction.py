@@ -1,12 +1,12 @@
 import numpy as np
-from hawkes_process import multi_simple_hawkes
+from class_and_func.hawkes_process import multi_simple_hawkes
 from matplotlib import pyplot as plt
 from pathlib import Path
 import seaborn as sns
 import os
 
 
-def f(base, ker, K, delta):
+def f(base, kernels, K, delta):
     array_res = np.zeros(2 + 4 * K)
     array_res[0:2] = base
     for i in range(2):
@@ -132,7 +132,7 @@ if __name__ == "__main__":
     lamb = 1
 
     start = 1
-    tot = 10  # 500
+    tot = 100  # 500
 
     delta = 1000
     coef = 1 / np.sqrt(delta)
@@ -159,22 +159,22 @@ if __name__ == "__main__":
 
     for i, noise in enumerate(noises):
         print(i)
-        path = str(2) + "Proportion" + str(baselines[0]) + "Random" + str(noise / 1000.) + "/"
+        path = "nmc_comparison/Eta" + str(int(noise)) + "/"
         for l in range(start, start + tot):
 
-            no_noise_path = "hawkes_HawkesRealPoint" + str(1000 * l + 1) + "_HawkesRealPoint" + str(
-                1000 * l + 2) + "_forward_K_" + str(K) + "_delta_" + str(delta) + "_kernel_none_lambda_" + str(
+            no_noise_path = "hawkes_HawkesRealPoint" + str(100 * l) + "_HawkesRealPoint" + str(
+                100 * l + 1) + "_forward_K_" + str(K) + "_delta_" + str(delta) + "_kernel_none_lambda_" + str(
                 lamb) + ".txt"
 
-            noised_path = "hawkes_HawkesPointNonMerged" + str(1000 * l + 1) + "_HawkesPointNonMerged" + str(
-                1000 * l + 2) + "_forward_K_" + str(K) + "_delta_" + str(delta) + "_kernel_none_lambda_" + str(
+            noised_path = "hawkes_HawkesNoisedPoint" + str(100 * l) + "_HawkesNoisedPoint" + str(
+                100 * l + 1) + "_forward_K_" + str(K) + "_delta_" + str(delta) + "_kernel_none_lambda_" + str(
                 lamb) + ".txt"
 
-            interval_path = "hawkes_HawkesNoisedInterval" + str(1000 * l + 1) + "_HawkesNoisedInterval" + str(
-                1000 * l + 2) + "_forward_K_" + str(K) + "_delta_" + str(
-                delta) + "_kernel_homogeneous_interval_lambda_" + str(lamb) + ".txt"
+            interval_path = "hawkes_HawkesNoisedInterval" + str(100 * l) + "_HawkesNoisedInterval" + str(
+                100 * l + 1) + "_forward_K_" + str(K) + "_delta_" + str(
+                delta) + "_kernel_heterogeneous_interval_lambda_" + str(lamb) + ".txt"
 
-            f_no_noise = open(Path(path + no_noise_path), 'r')
+            f_no_noise = open(Path("nmc_comparison/Eta500/" + no_noise_path), 'r')
             f_noised = open(Path(path + noised_path), 'r')
             f_interval = open(Path(path + interval_path), 'r')
 
