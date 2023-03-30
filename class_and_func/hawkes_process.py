@@ -240,7 +240,6 @@ class exp_thinning_hawkes(object):
 
                 lambda_k = self.intensity_jumps[k-1]
                 tau_star = self.timestamps[k] - self.timestamps[k - 1]
-
                 if lambda_k >= 0:
                     C_k = lambda_k - self.lambda_0
                 else:

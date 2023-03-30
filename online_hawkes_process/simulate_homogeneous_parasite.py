@@ -3,9 +3,12 @@ from class_and_func.estimator_class import loglikelihood_estimator_bfgs
 import numpy as np
 from matplotlib import pyplot as plt
 import seaborn as sns
+from scipy.stats import kstest
 
 
 if __name__ == "__main__":
+    sns.set_theme()
+
     np.random.seed(2)
     mu = 1
     alpha = 0.5
@@ -22,9 +25,11 @@ if __name__ == "__main__":
     steps = 40
     repet = 50
     estimated_list = np.zeros((steps, 3, repet))
+    kslist = []
 
     for i, noise in enumerate(np.linspace(0.05, 5, steps)):
         np.random.seed(0)
+        ksval = 0
         for j in range(repet):
             ppp = exp_thinning_hawkes(noise, 0, beta, max_time= 50)
             ppp.simulate()
@@ -36,6 +41,15 @@ if __name__ == "__main__":
             paras_estimation.fit(parasited_times)
 
             estimated_list[i, :, j] += np.array(paras_estimation.res.x)
+
+            model = exp_thinning_hawkes(paras_estimation.res.x[0], paras_estimation.res.x[1], paras_estimation.res.x[2])
+            model.set_time_intensity(hp.timestamps)
+            model.compensator_transform()
+            ksval += kstest(model.intervals_transformed, cdf="expon").pvalue
+            #print(ksval, end=" | ")
+
+        print("")
+        kslist += [ksval/repet]
 
     aux = np.swapaxes(np.array([np.ones((steps,repet))*mu, np.ones((steps,repet))*alpha, np.ones((steps,repet))*beta]), 0, 1)
     estimated_list = np.abs((estimated_list - aux)/aux)
@@ -75,4 +89,12 @@ if __name__ == "__main__":
 
     ax_est[2].set_xticks(np.arange(0, steps, 2))
     ax_est[2].set_xticklabels([np.round(0.1*k+0.05, 2) for k in range(20)])
+
+    ###### Goodness-of-fit
+
+    fig_gof, ax_gof = plt.subplots()
+    ax_gof.scatter(range(0, steps), kslist)
+    ax_gof.set_xticks(np.arange(0, steps, 2))
+    ax_gof.set_xticklabels([np.round(0.1 * k + 0.05, 2) for k in range(20)])
+
     plt.show()

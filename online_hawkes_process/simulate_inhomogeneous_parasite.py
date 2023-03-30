@@ -3,7 +3,7 @@ from class_and_func.estimator_class import loglikelihood_estimator_bfgs
 import numpy as np
 from matplotlib import pyplot as plt
 import seaborn as sns
-from scipy.stats import vonmises
+from scipy.stats import vonmises, kstest
 
 
 def sinusoidal(x, lam):
@@ -110,14 +110,16 @@ if __name__ == "__main__":
     real_estimation.fit(hp.timestamps)
 
     steps = 40
-    repet = 50
+    repet = 100
     estimated_list = np.zeros((steps, 3, repet))
 
     f = vonmises.pdf
-    np.random.seed(0)
+    kslist = []
 
     for i, noise in enumerate(np.linspace(0.05, 10, steps)):
+        np.random.seed(0)
         upper_bound = f(0, noise)
+        ksval = 0
 
         for j in range(repet):
             ppp = inhomogeneous_poisson_process(f=lambda x: f(x, noise), max_time= 50)
@@ -129,6 +131,14 @@ if __name__ == "__main__":
             paras_estimation.fit(parasited_times)
 
             estimated_list[i, :, j] += np.array(paras_estimation.res.x)
+
+            model = exp_thinning_hawkes(paras_estimation.res.x[0], paras_estimation.res.x[1], paras_estimation.res.x[2])
+            model.set_time_intensity(hp.timestamps)
+            model.compensator_transform()
+            ksval += kstest(model.intervals_transformed, cdf="expon").pvalue
+
+        #print("")
+        kslist += [ksval/repet]
 
     aux = np.swapaxes(np.array([np.ones((steps,repet))*mu, np.ones((steps,repet))*alpha, np.ones((steps,repet))*beta]), 0, 1)
     estimated_list = np.abs((estimated_list - aux)/aux)
@@ -168,4 +178,12 @@ if __name__ == "__main__":
 
     ax_est[2].set_xticks(np.arange(0, steps, 2))
     ax_est[2].set_xticklabels([np.round(0.1*k+0.05, 2) for k in range(20)])
+
+    ###### Goodness-of-fit
+
+    fig_gof, ax_gof = plt.subplots()
+    ax_gof.scatter(range(0, steps), kslist)
+    ax_gof.set_xticks(np.arange(0, steps, 2))
+    ax_gof.set_xticklabels([np.round(0.1 * k + 0.05, 2) for k in range(20)])
+
     plt.show()

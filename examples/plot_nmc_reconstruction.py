@@ -262,15 +262,18 @@ if __name__ == "__main__":
     fig1, axbis = plt.subplots(2, 2, sharey=True)
     fig2, axtris = plt.subplots(2, 2, sharey=True)
 
+    figs = [fig1, fig2]
     axs = [axbis, axtris]
 
     estimates_no_noise_mean = np.mean(estimated_no_noise[:, :, :], axis=2)
     estimates_noised_mean = np.mean(estimated_noised[:, :, :], axis=2)
     estimates_interval_mean = np.mean(estimated_interval[:, :, :], axis=2)
 
-    for i,s in enumerate([1, 5]):
+    for i,s in enumerate([1, 0]):
         axchos = axs[i]
-        print(noises[s])
+        auxi = noises[s]/delta
+        print(auxi)
+        figs[i].suptitle(r"$\eta_{max}/\delta$" + f"$ = {auxi}$")
 
         for i in range(2):
             for j in range(2):
