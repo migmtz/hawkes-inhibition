@@ -3,7 +3,7 @@ from scipy import stats
 from scipy.optimize import minimize
 from class_and_func.hawkes_process import exp_thinning_hawkes
 from class_and_func.likelihood_functions import *
-import time
+from scipy.stats import t
 
 
 class loglikelihood_estimator(object):
@@ -552,3 +552,80 @@ class multivariate_estimator_jit(object):
         self.beta_estim = np.array(self.res.x[-self.dim:])
 
         return (self.mu_estim, self.alpha_estim, self.beta_estim)
+
+
+class multivariate_estimator_bfgs_conf(object):
+    """
+    Estimator class for Exponential Hawkes process obtained through minimizaton of a loss using the L-BFGS-B algorithm choosing the support through confidence level.
+
+    Attributes
+    ----------
+    res : OptimizeResult
+        Result from minimization.
+    """
+
+    def __init__(self, loss=multivariate_loglikelihood_simplified, grad=True, dimension=None, initial_guess="random",
+                 options=None):
+        """
+        Parameters
+        ----------
+        loss : {loglikelihood, likelihood_approximated} or callable.
+            Function to minimize. Default is loglikelihood.
+        dimension : int
+            Dimension of problem to optimize. Default is None.
+        initial_guess : str or ndarray.
+            Initial guess for estimated vector. Either random initialization, or given vector of dimension (2*dimension + dimension**2,). Default is "random".
+        options : dict
+            Options to pass to the minimization method. Default is {'disp': False}.
+
+        Attributes
+        ----------
+        bounds :
+        """
+        if dimension is None:
+            raise ValueError("Dimension is necessary for initialization.")
+        self.dim = dimension
+
+        if isinstance(grad, bool) and grad:
+            self.loss = multivariate_loglikelihood_with_grad
+        else:
+            self.loss = loss
+        self.grad = grad
+
+        if isinstance(initial_guess, str) and initial_guess == "random":
+            self.initial_guess = np.concatenate(
+                (np.concatenate((np.ones(self.dim), np.ones(self.dim * self.dim))), np.ones(self.dim)))
+        if options is None:
+            self.options = {'disp': False}
+        else:
+            self.options = options
+
+    def fit(self, timestamps, support):
+        """
+        Parameters
+        ----------
+        timestamps : list of tuple.
+            Ordered list containing event times and marks.
+        """
+
+        self.options['iprint'] = 0
+        #print("loss", self.loss)
+
+        support_flat = support.ravel()
+
+        self.bounds = [(1e-12, None) for i in range(self.dim)] + [(None, None) if i else (0, 1e-16)
+                                                                  for i in support_flat] + [
+                          (1e-12, None) for i in range(self.dim)]
+        np.random.seed(0)
+        self.res = minimize(self.loss, self.initial_guess, method="L-BFGS-B", jac=self.grad,
+                            args=(timestamps, self.dim), bounds=self.bounds,
+                            options=self.options)
+
+        # print(self.res.x)
+
+        self.mu_estim = np.array(self.res.x[0: self.dim])
+        self.alpha_estim = np.array(self.res.x[self.dim: -self.dim]).reshape((self.dim, self.dim))
+        self.alpha_estim[np.abs(self.alpha_estim) <= 1e-16] = 0.0
+        self.beta_estim = np.array(self.res.x[-self.dim:])
+
+        return self.mu_estim, self.alpha_estim, self.beta_estim

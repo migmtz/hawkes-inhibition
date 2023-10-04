@@ -165,7 +165,7 @@ if __name__ == "__main__":
     ax.set_yscale('log')
 
     plt.legend(prop={'size': 14})
-    plt.savefig('p_values_conf.pdf', bbox_inches='tight', format="pdf", quality=90)
+    plt.savefig('p_values_conf.eps', bbox_inches='tight', format="eps")
 
-    plt.show()
+    #plt.show()
 

@@ -46,7 +46,7 @@ colors = ["orange", "orange", "g", "b", "g", "b", "r", "r"]
 
 
 if __name__ == "__main__":
-    number = 9
+    number = 0
     theta = param_dict[number]
     dim = int(np.sqrt(1 + theta.shape[0]) - 1)
     number_estimations = 25
@@ -98,6 +98,6 @@ if __name__ == "__main__":
                     # print(dim + dim * i + j)
                     ax[i, j].plot(x, estimation[dim + dim * i + j] * np.exp(-estimation[dim + dim * dim + i] * x), c=colors[dict_names[plot_names[ref]]], linestyle=styles[dict_names[plot_names[ref]]],label=labels[ref], alpha=0.5)
     plt.legend()
-    plt.savefig('reconstruction_param_'+ str(dictionary[number]) +'.pdf', bbox_inches='tight', format="pdf", quality=90)
+    plt.savefig('revision_jcgs/eps_images/reconstruction_param_'+ str(dictionary[number]) +'.eps', bbox_inches='tight', format="eps")
 
-    plt.show()
+    #plt.show()

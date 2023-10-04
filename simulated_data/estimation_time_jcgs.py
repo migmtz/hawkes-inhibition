@@ -6,6 +6,7 @@ from scipy.optimize import minimize
 from class_and_func.likelihood_functions import *
 from matplotlib import pyplot as plt
 import seaborn as sns
+import time
 
 
 def obtain_confidence_intervals(file_name, number, dim, number_estimations):
@@ -121,7 +122,10 @@ if __name__ == "__main__":
     level_conf = 0.95
     annot = False
 
-    avg, st_dev, n = obtain_confidence_intervals("grad", number, dim, number_estimations)
+    label = "grad"
+    method = "CfE"
+
+    avg, st_dev, n = obtain_confidence_intervals(label, number, dim, number_estimations)
 
     print("Number of estimations: ", n)
     quantile = -t.ppf((1 - level_conf) / 2, n - 1)
@@ -142,71 +146,46 @@ if __name__ == "__main__":
     x = np.arange(1, len(p_values)+1)
     sns.set_theme()
     fig, ax = plt.subplots(figsize=(12,8))
-
-    rej_p = p_values[p_values < x*(1-level_conf)/len(p_values)]
-    acc_p = p_values[p_values >= x*(1-level_conf)/len(p_values)]
-
-    print(np.arange(len(rej_p), len(p_values) + 1).shape, np.sort(acc_p).shape)
-
-    ax.scatter(np.arange(1, len(rej_p)+1), np.sort(rej_p), label="Rejected p-values", c="r")
-    ax.scatter(np.arange(len(rej_p)+1, len(p_values) + 1), np.sort(acc_p), label="Non-rejected p-values")
+    ax.scatter(np.arange(1, len(p_values)+1), np.sort(p_values), label="Ordered p-values")
     ax.plot(x, x*(1-level_conf)/len(p_values), label="B-H threshold")
-
-    ax.set_yscale('log')
 
     ord_p_values = np.argsort(p_values)
     reord_p_values = np.argsort(ord_p_values)
-    support = (p_values[ord_p_values] < x*(1-level_conf)/len(p_values))
 
-    support = support[reord_p_values].reshape((dim, dim))
+    if method == "CfSt":
+        support = (p_values[ord_p_values] < x*(1-level_conf)/len(p_values))
+        support = support[reord_p_values].reshape((dim, dim))
+    else:
+        support = np.invert((alpha_avg - alpha_dev < 0) & (0 < alpha_avg + alpha_dev))
 
     ax.legend()
 
-    fig.savefig('revision_jcgs/eps_images/p_values_10.eps', bbox_inches='tight', format='eps')
+    fig2, ax2 = plt.subplots()
+    sns.heatmap(support, ax=ax2)
 
-    # fig2, ax2 = plt.subplots()
-    # sns.heatmap(support, ax=ax2)
+    print("Support matrix: ", support)
+
+    until = 25
+
+    computation_time = 0
+
+    with open("estimation_" + str(number) + '_file/_simulation' + str(number), 'r') as read_obj:
+        csv_reader = csv.reader(read_obj)
+        for i, row in enumerate(csv_reader):
+            if i <= until:
+                tList = [make_tuple(i) for i in row]
+
+                loglikelihood_estimation = multivariate_estimator_bfgs_conf(dimension=dim, options={"disp": False})
+                start_time = time.time()
+                res = loglikelihood_estimation.fit(tList, support=support)
+                end_time = time.time()
+
+                computation_time += end_time - start_time
+            # print(loglikelihood_estimation.res.x)
+    computation_time /= until
+    with open("revision_jcgs/computation_times.txt", "a") as write_obj:
+        wr = csv.writer(write_obj, quoting=csv.QUOTE_ALL)
+        wr.writerow([method + " until " + str(until) + " : " + str(computation_time)])
+    print(computation_time)
+
     plt.show()
-
-    # support = np.invert((alpha_avg - alpha_dev < 0) & (0 < alpha_avg + alpha_dev))
-    #
-    # print("Support matrix: ", support)
-    #
-    # first = True
-    # before = 1
-    # until = 25
-    #
-    # if first:
-    #     with open("estimation_" + str(number) + '_file/_simulation' + str(number), 'r') as read_obj:
-    #         csv_reader = csv.reader(read_obj)
-    #         with open("sample_" + str(number_estimations) + "/estimation_" + str(number) + '_file/_estimation' + str(number) + 'confinterval', 'w', newline='') as myfile:
-    #             i = 1
-    #             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-    #             for row in csv_reader:
-    #                 while i <= 1:
-    #                     print("# ", i)
-    #                     tList = [make_tuple(i) for i in row]
-    #
-    #                     loglikelihood_estimation = multivariate_estimator_bfgs_conf(dimension=dim, options={"disp": False})
-    #                     res = loglikelihood_estimation.fit(tList, support=support)
-    #                     # print(loglikelihood_estimation.res.x)
-    #                     wr.writerow(loglikelihood_estimation.res.x.tolist())
-    #                     i += 1
-    #
-    # with open("estimation_" + str(number) + '_file/_simulation' + str(number), 'r') as read_obj:
-    #     csv_reader = csv.reader(read_obj)
-    #     with open("sample_" + str(number_estimations) + "/estimation_" + str(number) + '_file/_estimation' + str(number) + 'confinterval', 'a', newline='') as myfile:
-    #         i = 1
-    #         wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-    #         for row in csv_reader:
-    #             if i <= before:
-    #                 i += 1
-    #             elif before < i <= until:
-    #                 print("# ", i)
-    #                 tList = [make_tuple(i) for i in row]
-    #
-    #                 loglikelihood_estimation = multivariate_estimator_bfgs_conf(dimension=dim, options={"disp": False})
-    #                 res = loglikelihood_estimation.fit(tList, support=support)
-    #                 # print(loglikelihood_estimation.res.x)
-    #                 wr.writerow(loglikelihood_estimation.res.x.tolist())
-    #                 i += 1

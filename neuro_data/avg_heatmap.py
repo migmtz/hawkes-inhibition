@@ -34,7 +34,7 @@ if __name__ == "__main__":
     beta = np.zeros((250, 1))
 
     number_estimations = np.zeros((250, 250))
-    for number in range(1, 21):
+    for number in range(1, 11):
         a_file = open("traitements2/train" + str(number) + ".pkl", "rb")
         tList, filtre_dict_orig, orig_dict_filtre = pickle.load(a_file)
         dim = len(filtre_dict_orig)

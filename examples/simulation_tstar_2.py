@@ -102,28 +102,22 @@ if __name__ == "__main__":
             list_times[3] + (1/beta[0,0])*np.log((mu[0] - list_intensities_1[3])/mu[0])]
     ajuste = 0.017
     altura = - 0.4
-    ax[0].annotate("$T_{(1)}^{1\star}$", xy=(aux1[0]+ajuste, 0), xytext=(aux1[0]-0.05+ajuste, altura),
-                   annotation_clip=False)
-    ax[0].annotate("$T_{(2)}^{1\star} = T_{(3)}^{1\star}$", xy=(aux1[1]-0.1+ajuste, 0), xytext=(aux1[1]-0.1+ajuste-0.01, altura),
-                   annotation_clip=False)
-    #ax[0].annotate("$T_{(3)}^{1\star}$", xy=(aux1[1]+ajuste, 0), xytext=(aux1[1]+ajuste, altura),
-    #               annotation_clip=False)
-    ax[0].annotate("$T_{(4)}^{1\star}$", xy=(aux1[2]-0.07+ajuste, 0), xytext=(aux1[2]-0.07+ajuste, altura),
-                   annotation_clip=False)
+    ax[0].annotate("$T_{(1)}^{1\star}$", xy=(aux1[0]+ajuste, 0), xytext=(aux1[0]-0.05+ajuste, altura),annotation_clip=False)
+    ax[0].annotate("$T_{(2)}^{1\star} = T_{(3)}^{1\star}$", xy=(aux1[1]-0.1+ajuste, 0), xytext=(aux1[1]-0.1+ajuste-0.01, altura),annotation_clip=False)
+    #ax[0].annotate("$T_{(3)}^{1\star}$", xy=(aux1[1]+ajuste, 0), xytext=(aux1[1]+ajuste, altura),annotation_clip=False)
+    ax[0].annotate("$T_{(4)}^{1\star}$", xy=(aux1[2]-0.07+ajuste, 0), xytext=(aux1[2]-0.07+ajuste, altura),annotation_clip=False)
 
     ax[0].scatter(aux1, [0 for i in aux1], marker="x", c="k", linewidths=1, label="Restart times")
+    #ax[0].scatter(aux1[0:2], [0 for i in aux1][0:2], marker="x", c="k", linewidths=1, label="Restart times")
 
     aux1 = [list_times[0],
             list_times[1], list_times[3]]
-    ax[1].annotate("$T_{(1)}^{2\star}$", xy=(aux1[0]+ajuste, 0), xytext=(aux1[0]-0.05+ajuste, altura),
-                   annotation_clip=False)
-    ax[1].annotate("$T_{(2)}^{2\star}$", xy=(aux1[1] +ajuste, 0), xytext=(aux1[1] -0.05+ajuste, altura),
-                   annotation_clip=False)
-    ax[1].annotate("$T_{(3)}^{2\star} = T_{(4)}^{2\star}$", xy=(aux1[2]-0.1+ajuste, 0), xytext=(aux1[2]-0.1+ajuste-0.01, altura),
-                   annotation_clip=False)
-    #ax[1].annotate("$T_{(4)}^{2\star}$", xy=(aux1[2]+ajuste, 0), xytext=(aux1[2]+ajuste, altura),
-    #               annotation_clip=False)
+    ax[1].annotate("$T_{(1)}^{2\star}$", xy=(aux1[0]+ajuste, 0), xytext=(aux1[0]-0.05+ajuste, altura),annotation_clip=False)
+    ax[1].annotate("$T_{(2)}^{2\star}$", xy=(aux1[1] +ajuste, 0), xytext=(aux1[1] -0.05+ajuste, altura),annotation_clip=False)
+    ax[1].annotate("$T_{(3)}^{2\star} = T_{(4)}^{2\star}$", xy=(aux1[2]-0.1+ajuste, 0), xytext=(aux1[2]-0.1+ajuste-0.01, altura),annotation_clip=False)
+    #ax[1].annotate("$T_{(4)}^{2\star}$", xy=(aux1[2]+ajuste, 0), xytext=(aux1[2]+ajuste, altura),annotation_clip=False)
     ax[1].scatter(aux1, [0 for i in aux1], marker="x", c="k", linewidths=1)
+    #ax[1].scatter(aux1[0:2], [0 for i in aux1][0:2], marker="x", c="k", linewidths=1)
 
     ax[0].set_ylabel("$\lambda^1$")
     ax[1].set_ylabel("$\lambda^2$")
@@ -140,6 +134,6 @@ if __name__ == "__main__":
     ax[1].set_xlim((0, 2))
 
     ax[0].legend()
-    plt.savefig('restarTimesMarkedMulti.pdf', bbox_inches='tight', format="pdf", quality=90)
+    plt.savefig('pres_jds/restarTimesMarkedMulti3.pdf', bbox_inches='tight', format="pdf")
 
     plt.show()

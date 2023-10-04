@@ -93,6 +93,6 @@ if __name__ == "__main__":
         #legend_elements = [Patch(facecolor=colors[i], edgecolor='k', hatch=hatches[i], label=labels[i]) for i in range(4)]
 
     # ax[0, 0].legend(handles=legend_elements, loc='best')
-    plt.savefig('boxplots2O.pdf', bbox_inches='tight', format="pdf", quality=90)
+    plt.savefig('revision_jcgs/eps_images/boxplots2O.eps', bbox_inches='tight', format="eps")
     plt.tight_layout()
-    plt.show()
+    #plt.show()

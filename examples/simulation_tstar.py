@@ -38,6 +38,7 @@ if __name__ == "__main__":
 
     # Plotting function of intensity and step functions.
     hawkes.plot_intensity(ax=ax, plot_N=False)
+    print(hawkes.timestamps[1:4])
 
     ax[0].scatter([t for t,m in hawkes.timestamps[1:4]], [0,0,0], c="k", marker="x", linewidths=1)
     ax[1].scatter([t for t, m in hawkes.timestamps[1:4]], [0, 0, 0], c="k", marker="x", linewidths=1)
@@ -72,8 +73,8 @@ if __name__ == "__main__":
     #               s=15, c="r", zorder=3)
     # plt.scatter([0.2, 1.7, 5.75, 11.05, 15], np.array(hawkes.intensity_jumps[1:]), s=15, c="r", zorder=3)
 
-    ax[0].set_xlim((8, 10))
-    ax[1].set_xlim((8, 10))
+    ax[0].set_xlim((0, 2))
+    ax[1].set_xlim((0, 2))
     # ax[0].set_ylim((-1.5, 3))
 
     ax[0].set_ylabel("$\lambda^1$")
@@ -81,6 +82,6 @@ if __name__ == "__main__":
 
     ax[1].set_xlabel("$t$")
 
-    #plt.savefig('timesMarkedMulti.pdf', bbox_inches='tight', format="pdf", quality=90)
+    plt.savefig('timesMarkedMulti.jpeg', bbox_inches='tight', format="jpeg", dpi=300)
 
     plt.show()

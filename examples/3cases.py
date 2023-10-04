@@ -111,6 +111,6 @@ if __name__ == "__main__":
 
     ax[1].legend()
 
-    plt.savefig('cooldownTimesMarkedMulti.pdf', bbox_inches='tight', format="pdf", quality=90)
+    plt.savefig('cooldownTimesMarkedMulti.eps', bbox_inches='tight', format="eps")
 
-    plt.show()
+    #plt.show()

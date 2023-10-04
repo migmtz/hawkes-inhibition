@@ -202,7 +202,7 @@ Returns
             beta = np.array(theta[dim * (dim + 1):]).reshape((dim, 1))
     else:
         mu, alpha, beta = (i.copy() for i in theta)
-    print(mu.shape, alpha.shape, beta.shape)
+    #print(mu.shape, alpha.shape, beta.shape)
     beta = beta + 1e-10
 
     beta_1 = 1/beta

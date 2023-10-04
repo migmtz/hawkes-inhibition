@@ -3,12 +3,13 @@ import csv
 from ast import literal_eval as make_tuple
 from class_and_func.estimator_class import multivariate_estimator_bfgs_grad
 from dictionary_parameters import dictionary as param_dict
+import time
 
 
 if __name__ == "__main__":
     np.random.seed(0)
 
-    number = 0
+    number = 7
     print("Estimation number ", str(number))
     theta = param_dict[number]
     print(theta)
@@ -18,36 +19,60 @@ if __name__ == "__main__":
     before = 1
     until = 25
 
-    with open("estimation_"+str(number)+'_file/_simulation'+str(number), 'r') as read_obj:
+    label = "grad"
+    method = "grad"
+
+    computation_time = 0
+
+    with open("estimation_" + str(number) + '_file/_simulation' + str(number), 'r') as read_obj:
         csv_reader = csv.reader(read_obj)
-        with open("estimation_"+str(number)+'_file/_estimation'+str(number)+'grad100', 'w', newline='') as myfile:
-            i = 1
-            wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-            for row in csv_reader:
-              while i <= first:
-                print("# ", i)
+        for i, row in enumerate(csv_reader):
+            if i <= until:
                 tList = [make_tuple(i) for i in row]
 
                 loglikelihood_estimation = multivariate_estimator_bfgs_grad(dimension=dim, options={"disp": False})
+                start_time = time.time()
                 res = loglikelihood_estimation.fit(tList)
-                # print(loglikelihood_estimation.res.x)
-                wr.writerow(loglikelihood_estimation.res.x.tolist())
-                i += 1
+                end_time = time.time()
 
-    with open("estimation_"+str(number)+'_file/_simulation'+str(number), 'r') as read_obj:
-        csv_reader = csv.reader(read_obj)
-        with open("estimation_"+str(number)+'_file/_estimation'+str(number)+'grad100', 'a', newline='') as myfile:
-            i = 1
-            wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-            for row in csv_reader:
-                if i <= before:
-                    i += 1
-                elif i > before and i <= until:
-                    print("# ", i)
-                    tList = [make_tuple(i) for i in row]
+                computation_time += end_time - start_time
+            # print(loglikelihood_estimation.res.x)
+    computation_time /= until
+    with open("revision_jcgs/computation_times.txt", "a") as write_obj:
+        wr = csv.writer(write_obj, quoting=csv.QUOTE_ALL)
+        wr.writerow([method + " until " + str(until) + " : " + str(computation_time)])
+    print(computation_time)
 
-                    loglikelihood_estimation = multivariate_estimator_bfgs_grad(dimension=dim, options={"disp": False})
-                    res = loglikelihood_estimation.fit(tList)
-                    # print(loglikelihood_estimation.res.x)
-                    wr.writerow(loglikelihood_estimation.res.x.tolist())
-                    i += 1
+    # with open("estimation_"+str(number)+'_file/_simulation'+str(number), 'r') as read_obj:
+    #     csv_reader = csv.reader(read_obj)
+    #     with open("estimation_"+str(number)+'_file/_estimation'+str(number)+'grad100', 'w', newline='') as myfile:
+    #         i = 1
+    #         wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+    #         for row in csv_reader:
+    #           while i <= first:
+    #             print("# ", i)
+    #             tList = [make_tuple(i) for i in row]
+    #
+    #             loglikelihood_estimation = multivariate_estimator_bfgs_grad(dimension=dim, options={"disp": False})
+    #             res = loglikelihood_estimation.fit(tList)
+    #             # print(loglikelihood_estimation.res.x)
+    #             wr.writerow(loglikelihood_estimation.res.x.tolist())
+    #             i += 1
+    #
+    # with open("estimation_"+str(number)+'_file/_simulation'+str(number), 'r') as read_obj:
+    #     csv_reader = csv.reader(read_obj)
+    #     with open("estimation_"+str(number)+'_file/_estimation'+str(number)+'grad100', 'a', newline='') as myfile:
+    #         i = 1
+    #         wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+    #         for row in csv_reader:
+    #             if i <= before:
+    #                 i += 1
+    #             elif i > before and i <= until:
+    #                 print("# ", i)
+    #                 tList = [make_tuple(i) for i in row]
+    #
+    #                 loglikelihood_estimation = multivariate_estimator_bfgs_grad(dimension=dim, options={"disp": False})
+    #                 res = loglikelihood_estimation.fit(tList)
+    #                 # print(loglikelihood_estimation.res.x)
+    #                 wr.writerow(loglikelihood_estimation.res.x.tolist())
+    #                 i += 1
