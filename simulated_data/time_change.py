@@ -14,6 +14,7 @@ def time_change(theta, tList):
         beta = np.array(theta[dim * (dim + 1):]).reshape((dim, 1))
     else:
         mu, alpha, beta = (i.copy() for i in theta)
+        dim = mu.shape[0]
     beta = beta + 1e-10
 
     beta_1 = 1/beta
